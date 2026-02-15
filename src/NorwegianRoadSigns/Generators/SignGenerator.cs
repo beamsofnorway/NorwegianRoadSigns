@@ -307,15 +307,28 @@ public class SignGenerator
                 var definitionForCategory = definition ?? new SignDefinition { BorderColor = SignColor.Svart, Category = SignCategory.Other, DefaultWidth = 600, DefaultHeight = 600 };
                 var category = definitionForCategory.Category;
                 
-                var aspectRatio = (float)(definitionForCategory.DefaultWidth / definitionForCategory.DefaultHeight);
+                var aspectRatio = (float)(definitionForCategory.DefaultHeight / definitionForCategory.DefaultWidth);
                 var targetWidth = 1024;
-                var targetHeight = (int)(targetWidth / aspectRatio);
+                var targetHeight = (int)(targetWidth * aspectRatio);
                 
                 var hasText = !string.IsNullOrEmpty(plate.Text);
+                var fontHeight = plate.TextHeight > 0 
+                    ? plate.TextHeight 
+                    : definitionForCategory.DefaultHeight / 2.14;
                 
                 if (!string.IsNullOrEmpty(_signsBaseDirectory))
                 {
                     var imagePath = _textureGenerator.FindSignImage(_signsBaseDirectory, signNumber, category);
+                    
+                    if (!string.IsNullOrEmpty(imagePath))
+                    {
+                        var imgDims = _textureGenerator.GetImageDimensions(imagePath);
+                        if (imgDims.width > 0 && imgDims.height > 0)
+                        {
+                            targetWidth = 1024;
+                            targetHeight = (int)(targetWidth * (float)imgDims.height / imgDims.width);
+                        }
+                    }
                     
                     if (hasText)
                     {
@@ -324,11 +337,12 @@ public class SignGenerator
                             var baseTexture = _textureGenerator.ResizeImageFromFile(imagePath, targetWidth, targetHeight);
                             var textTexture = _textureGenerator.GenerateTransparentTextTexture(
                                 plate.Text ?? "",
-                                definitionForCategory.DefaultHeight * 0.15,
+                                fontHeight,
                                 SignColor.Svart,
                                 targetWidth,
-                                targetHeight / 4);
-                            texture = _textureGenerator.CompositeTextures(baseTexture, textTexture, 0, targetHeight / 4);
+                                targetHeight / 2,
+                                definitionForCategory.DefaultHeight);
+                            texture = _textureGenerator.CompositeTextures(baseTexture, textTexture, 0, (targetHeight - targetHeight / 2) / 2);
                         }
                         else
                         {
@@ -336,7 +350,9 @@ public class SignGenerator
                                 definitionForCategory,
                                 plate.Color,
                                 plate.Text,
-                                targetWidth);
+                                targetWidth,
+                                targetHeight,
+                                fontHeight);
                         }
                     }
                     else
@@ -351,7 +367,9 @@ public class SignGenerator
                                 definitionForCategory,
                                 plate.Color,
                                 plate.Text,
-                                targetWidth);
+                                targetWidth,
+                                targetHeight,
+                                fontHeight);
                         }
                     }
                 }
@@ -361,7 +379,9 @@ public class SignGenerator
                         definitionForCategory,
                         plate.Color,
                         plate.Text,
-                        targetWidth);
+                        targetWidth,
+                        targetHeight,
+                        fontHeight);
                 }
 
                 var plateMesh = new SignPlateMesh

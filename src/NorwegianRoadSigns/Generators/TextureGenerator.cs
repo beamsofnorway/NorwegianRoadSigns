@@ -10,6 +10,7 @@ namespace NorwegianRoadSigns.Generators;
 public class TextureGenerator
 {
     private const int DefaultTextureSize = 1024;
+    private const double FontSizeMultiplier = 7;
     
     private static readonly Dictionary<SignColor, Rgba32> ColorMap = new()
     {
@@ -160,9 +161,10 @@ public class TextureGenerator
         SignColor textColor,
         SignColor backgroundColor,
         int width,
-        int height)
+        int height,
+        double signHeight)
     {
-        return await Task.Run(() => GenerateTextTexture(text, fontHeight, textColor, backgroundColor, width, height));
+        return await Task.Run(() => GenerateTextTexture(text, fontHeight, textColor, backgroundColor, width, height, signHeight));
     }
 
     public byte[] GenerateTextTexture(
@@ -171,7 +173,8 @@ public class TextureGenerator
         SignColor textColor,
         SignColor backgroundColor,
         int width,
-        int height)
+        int height,
+        double signHeight)
     {
         if (string.IsNullOrEmpty(text))
         {
@@ -194,9 +197,8 @@ public class TextureGenerator
 
         // Draw text (simplified - just pixel-based text representation)
         // In production, use proper font rendering
-        var fontSize = (int)(fontHeight * height / 1000);
+        var fontSize = (int)(fontHeight * height / signHeight * FontSizeMultiplier);
         if (fontSize < 4) fontSize = 4;
-        if (fontSize > height / 2) fontSize = height / 2;
 
         DrawSimpleText(image, text, width, height, fontSize, fgColor);
 
@@ -286,6 +288,17 @@ public class TextureGenerator
         int width,
         int height)
     {
+        return CreateSignTextureWithText(definition, signColor, customText, width, height, definition.DefaultHeight * 0.15);
+    }
+
+    public byte[] CreateSignTextureWithText(
+        SignDefinition definition,
+        SignColor signColor,
+        string? customText,
+        int width,
+        int height,
+        double fontHeight)
+    {
         var baseTexture = GenerateBaseTexture(definition, signColor, width, height);
         
         if (string.IsNullOrEmpty(customText))
@@ -293,15 +306,17 @@ public class TextureGenerator
             return baseTexture;
         }
 
+        var textAreaHeight = height / 2;
         var textTexture = GenerateTextTexture(
             customText,
-            definition.DefaultHeight * 0.15,
+            fontHeight,
             SignColor.Svart,
             SignColor.Hvit,
             width,
-            height / 4);
+            textAreaHeight,
+            definition.DefaultHeight);
 
-        return CompositeTextures(baseTexture, textTexture, 0, height / 2);
+        return CompositeTextures(baseTexture, textTexture, 0, (height - textAreaHeight) / 2);
     }
 
     public byte[] GenerateTransparentTextTexture(
@@ -309,7 +324,8 @@ public class TextureGenerator
         double fontHeight,
         SignColor textColor,
         int width,
-        int height)
+        int height,
+        double signHeight)
     {
         if (string.IsNullOrEmpty(text))
         {
@@ -320,9 +336,8 @@ public class TextureGenerator
         
         var fgColor = ColorMap.TryGetValue(textColor, out var fg) ? fg : new Rgba32(0, 0, 0, 255);
         
-        var fontSize = (int)(fontHeight * height / 1000);
+        var fontSize = (int)(fontHeight * height / signHeight * FontSizeMultiplier);
         if (fontSize < 4) fontSize = 4;
-        if (fontSize > height / 2) fontSize = height / 2;
 
         DrawSimpleText(image, text, width, height, fontSize, fgColor);
 
@@ -473,6 +488,25 @@ public class TextureGenerator
 
         var imageBytes = File.ReadAllBytes(imagePath);
         return ResizeImage(imageBytes, targetWidth, targetHeight);
+    }
+
+    public (int width, int height) GetImageDimensions(string imagePath)
+    {
+        if (!File.Exists(imagePath))
+        {
+            return (0, 0);
+        }
+
+        try
+        {
+            using var stream = File.OpenRead(imagePath);
+            var info = Image.Identify(stream);
+            return (info.Width, info.Height);
+        }
+        catch
+        {
+            return (0, 0);
+        }
     }
 
     public async Task<byte[]?> DownloadImageAsync(string url, HttpClient? httpClient = null)
