@@ -14,14 +14,21 @@ public class SignGenerator
     private readonly TextureGenerator _textureGenerator;
     private readonly DaeWriter _daeWriter;
     private bool _definitionsLoaded;
+    private string? _signsBaseDirectory;
 
-    public SignGenerator(NvdbClient? nvdbClient = null, string? cachePath = null)
+    public SignGenerator(NvdbClient? nvdbClient = null, string? cachePath = null, string? signsBaseDirectory = null)
     {
         _nvdbClient = nvdbClient ?? new NvdbClient();
         _definitionDb = new SignDefinitionDb(cachePath);
         _meshGenerator = new MeshGenerator();
         _textureGenerator = new TextureGenerator();
         _daeWriter = new DaeWriter();
+        _signsBaseDirectory = signsBaseDirectory ?? "signs";
+    }
+
+    public void SetSignsBaseDirectory(string path)
+    {
+        _signsBaseDirectory = path;
     }
 
     public async Task LoadDefinitionsAsync(bool forceRefresh = false)
@@ -294,11 +301,68 @@ public class SignGenerator
                 }
 
                 var textureName = $"sign_{plate.Id}";
-                var texture = _textureGenerator.CreateSignTextureWithText(
-                    definition ?? new SignDefinition { BorderColor = SignColor.Svart },
-                    plate.Color,
-                    plate.Text,
-                    512);
+                
+                byte[] texture;
+                var signNumber = plate.SignNumber ?? "";
+                var definitionForCategory = definition ?? new SignDefinition { BorderColor = SignColor.Svart, Category = SignCategory.Other, DefaultWidth = 600, DefaultHeight = 600 };
+                var category = definitionForCategory.Category;
+                
+                var aspectRatio = (float)(definitionForCategory.DefaultWidth / definitionForCategory.DefaultHeight);
+                var targetWidth = 1024;
+                var targetHeight = (int)(targetWidth / aspectRatio);
+                
+                var hasText = !string.IsNullOrEmpty(plate.Text);
+                
+                if (!string.IsNullOrEmpty(_signsBaseDirectory))
+                {
+                    var imagePath = _textureGenerator.FindSignImage(_signsBaseDirectory, signNumber, category);
+                    
+                    if (hasText)
+                    {
+                        if (!string.IsNullOrEmpty(imagePath))
+                        {
+                            var baseTexture = _textureGenerator.ResizeImageFromFile(imagePath, targetWidth, targetHeight);
+                            var textTexture = _textureGenerator.GenerateTransparentTextTexture(
+                                plate.Text ?? "",
+                                definitionForCategory.DefaultHeight * 0.15,
+                                SignColor.Svart,
+                                targetWidth,
+                                targetHeight / 4);
+                            texture = _textureGenerator.CompositeTextures(baseTexture, textTexture, 0, targetHeight / 4);
+                        }
+                        else
+                        {
+                            texture = _textureGenerator.CreateSignTextureWithText(
+                                definitionForCategory,
+                                plate.Color,
+                                plate.Text,
+                                targetWidth);
+                        }
+                    }
+                    else
+                    {
+                        if (!string.IsNullOrEmpty(imagePath))
+                        {
+                            texture = _textureGenerator.ResizeImageFromFile(imagePath, targetWidth, targetHeight);
+                        }
+                        else
+                        {
+                            texture = _textureGenerator.CreateSignTextureWithText(
+                                definitionForCategory,
+                                plate.Color,
+                                plate.Text,
+                                targetWidth);
+                        }
+                    }
+                }
+                else
+                {
+                    texture = _textureGenerator.CreateSignTextureWithText(
+                        definitionForCategory,
+                        plate.Color,
+                        plate.Text,
+                        targetWidth);
+                }
 
                 var plateMesh = new SignPlateMesh
                 {

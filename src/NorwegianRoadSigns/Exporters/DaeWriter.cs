@@ -17,11 +17,11 @@ public class DaeWriter
                 new XAttribute("version", "1.4.1"),
                 new XAttribute(XNamespace.Xmlns + "xml", "http://www.w3.org/XML/1998/namespace"),
                 GenerateAsset(),
-                GenerateLibraryImages(signMesh, texturePath),
+                GenerateLibraryGeometries(signMesh),
                 GenerateLibraryMaterials(),
                 GenerateLibraryEffects(),
-                GenerateLibraryGeometries(signMesh),
-                GenerateLibraryVisualScenes(signMesh)
+                GenerateLibraryVisualScenes(signMesh),
+                GenerateScene()
             )
         );
 
@@ -53,8 +53,9 @@ public class DaeWriter
     private XElement GenerateAsset()
     {
         return new XElement(XName.Get("asset", DaeNamespace),
-            new XElement(XName.Get("created", DaeNamespace), DateTime.UtcNow.ToString("o")),
-            new XElement(XName.Get("modified", DaeNamespace), DateTime.UtcNow.ToString("o")),
+            new XElement(XName.Get("unit", DaeNamespace),
+                new XAttribute("name", "meter"),
+                new XAttribute("meter", "1")),
             new XElement(XName.Get("up_axis", DaeNamespace), "Z_UP")
         );
     }
@@ -89,6 +90,7 @@ public class DaeWriter
         return new XElement(XName.Get("library_materials", DaeNamespace),
             new XElement(XName.Get("material", DaeNamespace),
                 new XAttribute("id", "sign_material"),
+                new XAttribute("name", "sign_material"),
                 new XElement(XName.Get("instance_effect", DaeNamespace),
                     new XAttribute("url", "#sign_effect")
                 )
@@ -104,15 +106,9 @@ public class DaeWriter
                 new XElement(XName.Get("profile_COMMON", DaeNamespace),
                     new XElement(XName.Get("technique", DaeNamespace),
                         new XAttribute("sid", "common"),
-                        new XElement(XName.Get("phong", DaeNamespace),
+                        new XElement(XName.Get("lambert", DaeNamespace),
                             new XElement(XName.Get("diffuse", DaeNamespace),
-                                new XElement(XName.Get("color", DaeNamespace), "1 1 1 1")
-                            ),
-                            new XElement(XName.Get("specular", DaeNamespace),
-                                new XElement(XName.Get("color", DaeNamespace), "0.2 0.2 0.2 1")
-                            ),
-                            new XElement(XName.Get("shininess", DaeNamespace),
-                                new XElement(XName.Get("float", DaeNamespace), "64")
+                                new XElement(XName.Get("color", DaeNamespace), "0.8 0.4 0.4 1.0")
                             )
                         )
                     )
@@ -155,7 +151,6 @@ public class DaeWriter
         var positions = new StringBuilder();
         var normals = new StringBuilder();
         var uvs = new StringBuilder();
-        var indices = new StringBuilder();
 
         foreach (var v in mesh.Vertices)
         {
@@ -170,15 +165,6 @@ public class DaeWriter
         foreach (var uv in mesh.UVs)
         {
             uvs.Append($"{uv.X} {uv.Y} ");
-        }
-
-        for (int i = 0; i < mesh.Indices.Count; i++)
-        {
-            indices.Append(mesh.Indices[i]);
-            if (i < mesh.Indices.Count - 1)
-            {
-                indices.Append(i % 3 == 2 ? " " : ", ");
-            }
         }
 
         var vertCount = mesh.Vertices.Count;
@@ -245,15 +231,15 @@ public class DaeWriter
                 ),
                 // UV source
                 new XElement(XName.Get("source", DaeNamespace),
-                    new XAttribute("id", $"{id}-uvs"),
+                    new XAttribute("id", $"{id}-map-0"),
                     new XElement(XName.Get("float_array", DaeNamespace),
-                        new XAttribute("id", $"{id}-uvs-array"),
+                        new XAttribute("id", $"{id}-map-0-array"),
                         new XAttribute("count", vertCount * 2),
                         uvs.ToString().Trim()
                     ),
                     new XElement(XName.Get("technique_common", DaeNamespace),
                         new XElement(XName.Get("accessor", DaeNamespace),
-                            new XAttribute("source", $"#{id}-uvs-array"),
+                            new XAttribute("source", $"#{id}-map-0-array"),
                             new XAttribute("count", vertCount),
                             new XAttribute("stride", 2),
                             new XElement(XName.Get("param", DaeNamespace),
@@ -278,6 +264,7 @@ public class DaeWriter
                 // Triangles
                 new XElement(XName.Get("triangles", DaeNamespace),
                     new XAttribute("count", mesh.Indices.Count / 3),
+                    new XAttribute("material", "sign_material"),
                     new XElement(XName.Get("input", DaeNamespace),
                         new XAttribute("semantic", "VERTEX"),
                         new XAttribute("source", $"#{id}-vertices"),
@@ -290,8 +277,9 @@ public class DaeWriter
                     ),
                     new XElement(XName.Get("input", DaeNamespace),
                         new XAttribute("semantic", "TEXCOORD"),
-                        new XAttribute("source", $"#{id}-uvs"),
-                        new XAttribute("offset", 2)
+                        new XAttribute("source", $"#{id}-map-0"),
+                        new XAttribute("offset", 2),
+                        new XAttribute("set", 0)
                     ),
                     new XElement(XName.Get("p", DaeNamespace),
                         GenerateIndicesString(mesh)
@@ -323,31 +311,43 @@ public class DaeWriter
         return sb.ToString();
     }
 
+    private XElement GenerateScene()
+    {
+        return new XElement(XName.Get("scene", DaeNamespace),
+            new XElement(XName.Get("instance_visual_scene", DaeNamespace),
+                new XAttribute("url", "#Scene")
+            )
+        );
+    }
+
     private XElement GenerateLibraryVisualScenes(SignMesh signMesh)
     {
-        var nodes = new List<XElement>();
-        var nodeId = 0;
+        var sceneNodes = new List<XElement>();
 
-        // Root node
-        nodes.Add(new XElement(XName.Get("node", DaeNamespace),
-            new XAttribute("id", "sign_root"),
-            new XAttribute("name", "sign_root"),
-            new XAttribute("type", "NODE")
-        ));
+        var rootNode = new XElement(XName.Get("node", DaeNamespace),
+            new XAttribute("id", "base00"),
+            new XAttribute("name", "base00")
+        );
+
+        var startNode = new XElement(XName.Get("node", DaeNamespace),
+            new XAttribute("id", "start01"),
+            new XAttribute("name", "start01")
+        );
+
+        var leafNodes = new List<XElement>();
 
         // Post node
         if (signMesh.Post.Vertices.Count > 0)
         {
-            nodes.Add(new XElement(XName.Get("node", DaeNamespace),
+            leafNodes.Add(new XElement(XName.Get("node", DaeNamespace),
                 new XAttribute("id", "post"),
                 new XAttribute("name", "post"),
-                new XAttribute("type", "NODE"),
                 new XElement(XName.Get("instance_geometry", DaeNamespace),
-                    new XAttribute("url", $"#post_geometry_{nodeId++}"),
+                    new XAttribute("url", "#post_geometry_0"),
                     new XElement(XName.Get("bind_material", DaeNamespace),
                         new XElement(XName.Get("technique_common", DaeNamespace),
                             new XElement(XName.Get("instance_material", DaeNamespace),
-                                new XAttribute("symbol", "material0"),
+                                new XAttribute("symbol", "sign_material"),
                                 new XAttribute("target", "#sign_material")
                             )
                         )
@@ -356,38 +356,40 @@ public class DaeWriter
             ));
         }
 
-        // Bracket node - position at top of post
+        // Bracket node
         if (signMesh.Bracket.Vertices.Count > 0)
         {
-            nodes.Add(new XElement(XName.Get("node", DaeNamespace),
+            leafNodes.Add(new XElement(XName.Get("node", DaeNamespace),
                 new XAttribute("id", "bracket"),
                 new XAttribute("name", "bracket"),
-                new XAttribute("type", "NODE"),
-                new XElement(XName.Get("translate", DaeNamespace),
-                    new XAttribute("sid", "translation"),
-                    "0 0 2.0"  // Bracket at top of post
-                ),
                 new XElement(XName.Get("instance_geometry", DaeNamespace),
-                    new XAttribute("url", $"#bracket_geometry_{nodeId++}")
+                    new XAttribute("url", "#bracket_geometry_0"),
+                    new XElement(XName.Get("bind_material", DaeNamespace),
+                        new XElement(XName.Get("technique_common", DaeNamespace),
+                            new XElement(XName.Get("instance_material", DaeNamespace),
+                                new XAttribute("symbol", "sign_material"),
+                                new XAttribute("target", "#sign_material")
+                            )
+                        )
+                    )
                 )
             ));
         }
 
-        // Plate nodes - mesh is already positioned correctly
+        // Plate nodes
         foreach (var plate in signMesh.Plates)
         {
             if (plate.Mesh.Vertices.Count > 0)
             {
-                nodes.Add(new XElement(XName.Get("node", DaeNamespace),
+                leafNodes.Add(new XElement(XName.Get("node", DaeNamespace),
                     new XAttribute("id", $"plate_{plate.Plate.Id}"),
                     new XAttribute("name", $"plate_{plate.Plate.SignNumber ?? plate.Plate.Id.ToString()}"),
-                    new XAttribute("type", "NODE"),
                     new XElement(XName.Get("instance_geometry", DaeNamespace),
                         new XAttribute("url", $"#plate_geometry_{plate.Plate.Id}"),
                         new XElement(XName.Get("bind_material", DaeNamespace),
                             new XElement(XName.Get("technique_common", DaeNamespace),
                                 new XElement(XName.Get("instance_material", DaeNamespace),
-                                    new XAttribute("symbol", "material0"),
+                                    new XAttribute("symbol", "sign_material"),
                                     new XAttribute("target", "#sign_material")
                                 )
                             )
@@ -397,11 +399,19 @@ public class DaeWriter
             }
         }
 
+        foreach (var leafNode in leafNodes)
+        {
+            startNode.Add(leafNode);
+        }
+
+        rootNode.Add(startNode);
+        sceneNodes.Add(rootNode);
+
         return new XElement(XName.Get("library_visual_scenes", DaeNamespace),
             new XElement(XName.Get("visual_scene", DaeNamespace),
                 new XAttribute("id", "Scene"),
                 new XAttribute("name", "Scene"),
-                nodes
+                sceneNodes
             )
         );
     }

@@ -15,6 +15,7 @@ public class SignDefinition
     public bool HasText { get; set; }
     public bool IsVariable { get; set; }
     public bool IsElectronic { get; set; }
+    public string? DownloadFormat { get; set; }
     public List<SignSize> Sizes { get; set; } = new();
 }
 
