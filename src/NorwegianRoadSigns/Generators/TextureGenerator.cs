@@ -437,7 +437,7 @@ public class TextureGenerator
         {
             var fileName = Path.GetFileNameWithoutExtension(file);
             
-            var match = System.Text.RegularExpressions.Regex.Match(fileName, @"^(\d+)(?:_(\d+|[A-Z]))?\b");
+            var match = System.Text.RegularExpressions.Regex.Match(fileName, @"^(\d+)(?:[._](\d+|[A-Z]))?\b");
             if (!match.Success)
             {
                 continue;
@@ -451,6 +451,7 @@ public class TextureGenerator
                 if (!string.IsNullOrEmpty(variant) && fileVariant == variant)
                 {
                     exactMatch = file;
+                    break;
                 }
                 else if (string.IsNullOrEmpty(fileVariant))
                 {
