@@ -1,0 +1,569 @@
+﻿<COLLADA version="1.4.1" xmlns:xml="http://www.w3.org/XML/1998/namespace" xmlns="http://www.collada.org/2005/11/COLLADASchema">
+  <asset>
+    <created>2026-02-15T17:49:14.7008597Z</created>
+    <modified>2026-02-15T17:49:14.7008926Z</modified>
+    <up_axis>Z_UP</up_axis>
+  </asset>
+  <library_images>
+    <image id="sign_86278830">
+      <init_from>sign_86278830.png</init_from>
+    </image>
+    <image id="sign_86278832">
+      <init_from>sign_86278832.png</init_from>
+    </image>
+    <image id="sign_159473391">
+      <init_from>sign_159473391.png</init_from>
+    </image>
+    <image id="sign_159473392">
+      <init_from>sign_159473392.png</init_from>
+    </image>
+    <image id="sign_159473393">
+      <init_from>sign_159473393.png</init_from>
+    </image>
+    <image id="sign_159473394">
+      <init_from>sign_159473394.png</init_from>
+    </image>
+    <image id="sign_159473395">
+      <init_from>sign_159473395.png</init_from>
+    </image>
+    <image id="sign_159473396">
+      <init_from>sign_159473396.png</init_from>
+    </image>
+  </library_images>
+  <library_materials>
+    <material id="sign_material">
+      <instance_effect url="#sign_effect" />
+    </material>
+  </library_materials>
+  <library_effects>
+    <effect id="sign_effect">
+      <profile_COMMON>
+        <technique sid="common">
+          <phong>
+            <diffuse>
+              <color>1 1 1 1</color>
+            </diffuse>
+            <specular>
+              <color>0.2 0.2 0.2 1</color>
+            </specular>
+            <shininess>
+              <float>64</float>
+            </shininess>
+          </phong>
+        </technique>
+      </profile_COMMON>
+    </effect>
+  </library_effects>
+  <library_geometries>
+    <geometry id="post_geometry_0" name="Post">
+      <mesh>
+        <source id="post_geometry_0-positions">
+          <float_array id="post_geometry_0-positions-array" count="162">0.025 0 2.59 0.021650635 0.0125 2.59 0.0125 0.021650635 2.59 1.5308086E-18 0.025 2.59 -0.0125 0.021650635 2.59 -0.021650635 0.0125 2.59 -0.025 3.0616171E-18 2.59 -0.021650635 -0.0125 2.59 -0.0125 -0.021650635 2.59 -4.5924257E-18 -0.025 2.59 0.0125 -0.021650635 2.59 0.021650635 -0.0125 2.59 0.025 -6.1232343E-18 2.59 0.025 0 0 0.021650635 0.0125 0 0.0125 0.021650635 0 1.5308086E-18 0.025 0 -0.0125 0.021650635 0 -0.021650635 0.0125 0 -0.025 3.0616171E-18 0 -0.021650635 -0.0125 0 -0.0125 -0.021650635 0 -4.5924257E-18 -0.025 0 0.0125 -0.021650635 0 0.021650635 -0.0125 0 0.025 -6.1232343E-18 0 0 0 2.59 0.025 0 2.59 0.021650635 0.0125 2.59 0.0125 0.021650635 2.59 1.5308086E-18 0.025 2.59 -0.0125 0.021650635 2.59 -0.021650635 0.0125 2.59 -0.025 3.0616171E-18 2.59 -0.021650635 -0.0125 2.59 -0.0125 -0.021650635 2.59 -4.5924257E-18 -0.025 2.59 0.0125 -0.021650635 2.59 0.021650635 -0.0125 2.59 0.025 -6.1232343E-18 2.59 0 0 0 0.025 0 0 0.021650635 0.0125 0 0.0125 0.021650635 0 1.5308086E-18 0.025 0 -0.0125 0.021650635 0 -0.021650635 0.0125 0 -0.025 3.0616171E-18 0 -0.021650635 -0.0125 0 -0.0125 -0.021650635 0 -4.5924257E-18 -0.025 0 0.0125 -0.021650635 0 0.021650635 -0.0125 0 0.025 -6.1232343E-18 0</float_array>
+          <technique_common>
+            <accessor source="#post_geometry_0-positions-array" count="54" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="post_geometry_0-normals">
+          <float_array id="post_geometry_0-normals-array" count="162">1 0 0 0.8660254 0.5 0 0.5 0.8660254 0 6.123234E-17 1 0 -0.5 0.8660254 0 -0.8660254 0.5 0 -1 1.2246469E-16 0 -0.8660254 -0.5 0 -0.5 -0.8660254 0 -1.8369701E-16 -1 0 0.5 -0.8660254 0 0.8660254 -0.5 0 1 -2.4492937E-16 0 1 0 0 0.8660254 0.5 0 0.5 0.8660254 0 6.123234E-17 1 0 -0.5 0.8660254 0 -0.8660254 0.5 0 -1 1.2246469E-16 0 -0.8660254 -0.5 0 -0.5 -0.8660254 0 -1.8369701E-16 -1 0 0.5 -0.8660254 0 0.8660254 -0.5 0 1 -2.4492937E-16 0 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1</float_array>
+          <technique_common>
+            <accessor source="#post_geometry_0-normals-array" count="54" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="post_geometry_0-uvs">
+          <float_array id="post_geometry_0-uvs-array" count="108">0 1 0.083333336 1 0.16666667 1 0.25 1 0.33333334 1 0.41666666 1 0.5 1 0.5833333 1 0.6666667 1 0.75 1 0.8333333 1 0.9166667 1 1 1 0 0 0.083333336 0 0.16666667 0 0.25 0 0.33333334 0 0.41666666 0 0.5 0 0.5833333 0 0.6666667 0 0.75 0 0.8333333 0 0.9166667 0 1 0 0.5 0.5 1 0.5 0.9330127 0.75 0.75 0.9330127 0.5 1 0.25 0.9330127 0.0669873 0.75 0 0.5 0.0669873 0.25 0.25 0.0669873 0.5 0 0.75 0.0669873 0.9330127 0.25 1 0.5 0.5 0.5 1 0.5 0.9330127 0.75 0.75 0.9330127 0.5 1 0.25 0.9330127 0.0669873 0.75 0 0.5 0.0669873 0.25 0.25 0.0669873 0.5 0 0.75 0.0669873 0.9330127 0.25 1 0.5</float_array>
+          <technique_common>
+            <accessor source="#post_geometry_0-uvs-array" count="54" stride="2">
+              <param name="S" type="float" />
+              <param name="T" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="post_geometry_0-vertices">
+          <input semantic="POSITION" source="#post_geometry_0-positions" />
+        </vertices>
+        <triangles count="48">
+          <input semantic="VERTEX" source="#post_geometry_0-vertices" offset="0" />
+          <input semantic="NORMAL" source="#post_geometry_0-normals" offset="1" />
+          <input semantic="TEXCOORD" source="#post_geometry_0-uvs" offset="2" />
+          <p>0 0 0 1 1 1 14 14 14 0 0 0 14 14 14 13 13 13 1 1 1 2 2 2 15 15 15 1 1 1 15 15 15 14 14 14 2 2 2 3 3 3 16 16 16 2 2 2 16 16 16 15 15 15 3 3 3 4 4 4 17 17 17 3 3 3 17 17 17 16 16 16 4 4 4 5 5 5 18 18 18 4 4 4 18 18 18 17 17 17 5 5 5 6 6 6 19 19 19 5 5 5 19 19 19 18 18 18 6 6 6 7 7 7 20 20 20 6 6 6 20 20 20 19 19 19 7 7 7 8 8 8 21 21 21 7 7 7 21 21 21 20 20 20 8 8 8 9 9 9 22 22 22 8 8 8 22 22 22 21 21 21 9 9 9 10 10 10 23 23 23 9 9 9 23 23 23 22 22 22 10 10 10 11 11 11 24 24 24 10 10 10 24 24 24 23 23 23 11 11 11 12 12 12 25 25 25 11 11 11 25 25 25 24 24 24 26 26 26 27 27 27 28 28 28 26 26 26 28 28 28 29 29 29 26 26 26 29 29 29 30 30 30 26 26 26 30 30 30 31 31 31 26 26 26 31 31 31 32 32 32 26 26 26 32 32 32 33 33 33 26 26 26 33 33 33 34 34 34 26 26 26 34 34 34 35 35 35 26 26 26 35 35 35 36 36 36 26 26 26 36 36 36 37 37 37 26 26 26 37 37 37 38 38 38 26 26 26 38 38 38 39 39 39 40 40 40 42 42 42 41 41 41 40 40 40 43 43 43 42 42 42 40 40 40 44 44 44 43 43 43 40 40 40 45 45 45 44 44 44 40 40 40 46 46 46 45 45 45 40 40 40 47 47 47 46 46 46 40 40 40 48 48 48 47 47 47 40 40 40 49 49 49 48 48 48 40 40 40 50 50 50 49 49 49 40 40 40 51 51 51 50 50 50 40 40 40 52 52 52 51 51 51 40 40 40 53 53 53 52 52 52</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="bracket_geometry_1" name="Rectangle">
+      <mesh>
+        <source id="bracket_geometry_1-positions">
+          <float_array id="bracket_geometry_1-positions-array" count="108">-0.025 -0.01 0.15 0.025 -0.01 0.15 0.025 0.01 0.15 -0.025 0.01 0.15 -0.025 -0.01 0.15 0.025 0.01 0.15 0.025 -0.01 -0.15 -0.025 -0.01 -0.15 -0.025 0.01 -0.15 0.025 -0.01 -0.15 -0.025 0.01 -0.15 0.025 0.01 -0.15 -0.025 0.01 0.15 0.025 0.01 0.15 0.025 0.01 -0.15 -0.025 0.01 0.15 0.025 0.01 -0.15 -0.025 0.01 -0.15 -0.025 -0.01 -0.15 0.025 -0.01 -0.15 0.025 -0.01 0.15 -0.025 -0.01 -0.15 0.025 -0.01 0.15 -0.025 -0.01 0.15 0.025 -0.01 0.15 0.025 -0.01 -0.15 0.025 0.01 -0.15 0.025 -0.01 0.15 0.025 0.01 -0.15 0.025 0.01 0.15 -0.025 -0.01 -0.15 -0.025 -0.01 0.15 -0.025 0.01 0.15 -0.025 -0.01 -0.15 -0.025 0.01 0.15 -0.025 0.01 -0.15</float_array>
+          <technique_common>
+            <accessor source="#bracket_geometry_1-positions-array" count="36" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="bracket_geometry_1-normals">
+          <float_array id="bracket_geometry_1-normals-array" count="108">0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0</float_array>
+          <technique_common>
+            <accessor source="#bracket_geometry_1-normals-array" count="36" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="bracket_geometry_1-uvs">
+          <float_array id="bracket_geometry_1-uvs-array" count="72">0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#bracket_geometry_1-uvs-array" count="36" stride="2">
+              <param name="S" type="float" />
+              <param name="T" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="bracket_geometry_1-vertices">
+          <input semantic="POSITION" source="#bracket_geometry_1-positions" />
+        </vertices>
+        <triangles count="12">
+          <input semantic="VERTEX" source="#bracket_geometry_1-vertices" offset="0" />
+          <input semantic="NORMAL" source="#bracket_geometry_1-normals" offset="1" />
+          <input semantic="TEXCOORD" source="#bracket_geometry_1-uvs" offset="2" />
+          <p>0 0 0 1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 7 7 7 8 8 8 9 9 9 10 10 10 11 11 11 12 12 12 13 13 13 14 14 14 15 15 15 16 16 16 17 17 17 18 18 18 19 19 19 20 20 20 21 21 21 22 22 22 23 23 23 24 24 24 25 25 25 26 26 26 27 27 27 28 28 28 29 29 29 30 30 30 31 31 31 32 32 32 33 33 33 34 34 34 35 35 35</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="plate_geometry_86278830" name="Rectangle">
+      <mesh>
+        <source id="plate_geometry_86278830-positions">
+          <float_array id="plate_geometry_86278830-positions-array" count="108">-0.045 -0.75 1.7299998 -0.045 0.75 1.7299998 -0.025 0.75 1.7299998 -0.025 -0.75 1.7299998 -0.045 -0.75 1.7299998 -0.025 0.75 1.7299998 -0.045 0.75 1.3499999 -0.045 -0.75 1.3499999 -0.025 -0.75 1.3499999 -0.045 0.75 1.3499999 -0.025 -0.75 1.3499999 -0.025 0.75 1.3499999 -0.025 -0.75 1.7299998 -0.025 0.75 1.7299998 -0.025 0.75 1.3499999 -0.025 -0.75 1.7299998 -0.025 0.75 1.3499999 -0.025 -0.75 1.3499999 -0.045 -0.75 1.3499999 -0.045 0.75 1.3499999 -0.045 0.75 1.7299998 -0.045 -0.75 1.3499999 -0.045 0.75 1.7299998 -0.045 -0.75 1.7299998 -0.045 0.75 1.7299998 -0.045 0.75 1.3499999 -0.025 0.75 1.3499999 -0.045 0.75 1.7299998 -0.025 0.75 1.3499999 -0.025 0.75 1.7299998 -0.045 -0.75 1.3499999 -0.045 -0.75 1.7299998 -0.025 -0.75 1.7299998 -0.045 -0.75 1.3499999 -0.025 -0.75 1.7299998 -0.025 -0.75 1.3499999</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_86278830-positions-array" count="36" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="plate_geometry_86278830-normals">
+          <float_array id="plate_geometry_86278830-normals-array" count="108">0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_86278830-normals-array" count="36" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="plate_geometry_86278830-uvs">
+          <float_array id="plate_geometry_86278830-uvs-array" count="72">0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_86278830-uvs-array" count="36" stride="2">
+              <param name="S" type="float" />
+              <param name="T" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="plate_geometry_86278830-vertices">
+          <input semantic="POSITION" source="#plate_geometry_86278830-positions" />
+        </vertices>
+        <triangles count="12">
+          <input semantic="VERTEX" source="#plate_geometry_86278830-vertices" offset="0" />
+          <input semantic="NORMAL" source="#plate_geometry_86278830-normals" offset="1" />
+          <input semantic="TEXCOORD" source="#plate_geometry_86278830-uvs" offset="2" />
+          <p>0 0 0 1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 7 7 7 8 8 8 9 9 9 10 10 10 11 11 11 12 12 12 13 13 13 14 14 14 15 15 15 16 16 16 17 17 17 18 18 18 19 19 19 20 20 20 21 21 21 22 22 22 23 23 23 24 24 24 25 25 25 26 26 26 27 27 27 28 28 28 29 29 29 30 30 30 31 31 31 32 32 32 33 33 33 34 34 34 35 35 35</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="plate_geometry_86278832" name="Rectangle">
+      <mesh>
+        <source id="plate_geometry_86278832-positions">
+          <float_array id="plate_geometry_86278832-positions-array" count="108">-0.045 -0.75 1.3 -0.045 0.75 1.3 -0.025 0.75 1.3 -0.025 -0.75 1.3 -0.045 -0.75 1.3 -0.025 0.75 1.3 -0.045 0.75 0.9199999 -0.045 -0.75 0.9199999 -0.025 -0.75 0.9199999 -0.045 0.75 0.9199999 -0.025 -0.75 0.9199999 -0.025 0.75 0.9199999 -0.025 -0.75 1.3 -0.025 0.75 1.3 -0.025 0.75 0.9199999 -0.025 -0.75 1.3 -0.025 0.75 0.9199999 -0.025 -0.75 0.9199999 -0.045 -0.75 0.9199999 -0.045 0.75 0.9199999 -0.045 0.75 1.3 -0.045 -0.75 0.9199999 -0.045 0.75 1.3 -0.045 -0.75 1.3 -0.045 0.75 1.3 -0.045 0.75 0.9199999 -0.025 0.75 0.9199999 -0.045 0.75 1.3 -0.025 0.75 0.9199999 -0.025 0.75 1.3 -0.045 -0.75 0.9199999 -0.045 -0.75 1.3 -0.025 -0.75 1.3 -0.045 -0.75 0.9199999 -0.025 -0.75 1.3 -0.025 -0.75 0.9199999</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_86278832-positions-array" count="36" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="plate_geometry_86278832-normals">
+          <float_array id="plate_geometry_86278832-normals-array" count="108">0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_86278832-normals-array" count="36" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="plate_geometry_86278832-uvs">
+          <float_array id="plate_geometry_86278832-uvs-array" count="72">0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_86278832-uvs-array" count="36" stride="2">
+              <param name="S" type="float" />
+              <param name="T" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="plate_geometry_86278832-vertices">
+          <input semantic="POSITION" source="#plate_geometry_86278832-positions" />
+        </vertices>
+        <triangles count="12">
+          <input semantic="VERTEX" source="#plate_geometry_86278832-vertices" offset="0" />
+          <input semantic="NORMAL" source="#plate_geometry_86278832-normals" offset="1" />
+          <input semantic="TEXCOORD" source="#plate_geometry_86278832-uvs" offset="2" />
+          <p>0 0 0 1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 7 7 7 8 8 8 9 9 9 10 10 10 11 11 11 12 12 12 13 13 13 14 14 14 15 15 15 16 16 16 17 17 17 18 18 18 19 19 19 20 20 20 21 21 21 22 22 22 23 23 23 24 24 24 25 25 25 26 26 26 27 27 27 28 28 28 29 29 29 30 30 30 31 31 31 32 32 32 33 33 33 34 34 34 35 35 35</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="plate_geometry_159473391" name="Rectangle">
+      <mesh>
+        <source id="plate_geometry_159473391-positions">
+          <float_array id="plate_geometry_159473391-positions-array" count="108">-0.045 -0.75 0.86999995 -0.045 0.75 0.86999995 -0.025 0.75 0.86999995 -0.025 -0.75 0.86999995 -0.045 -0.75 0.86999995 -0.025 0.75 0.86999995 -0.045 0.75 0.48999995 -0.045 -0.75 0.48999995 -0.025 -0.75 0.48999995 -0.045 0.75 0.48999995 -0.025 -0.75 0.48999995 -0.025 0.75 0.48999995 -0.025 -0.75 0.86999995 -0.025 0.75 0.86999995 -0.025 0.75 0.48999995 -0.025 -0.75 0.86999995 -0.025 0.75 0.48999995 -0.025 -0.75 0.48999995 -0.045 -0.75 0.48999995 -0.045 0.75 0.48999995 -0.045 0.75 0.86999995 -0.045 -0.75 0.48999995 -0.045 0.75 0.86999995 -0.045 -0.75 0.86999995 -0.045 0.75 0.86999995 -0.045 0.75 0.48999995 -0.025 0.75 0.48999995 -0.045 0.75 0.86999995 -0.025 0.75 0.48999995 -0.025 0.75 0.86999995 -0.045 -0.75 0.48999995 -0.045 -0.75 0.86999995 -0.025 -0.75 0.86999995 -0.045 -0.75 0.48999995 -0.025 -0.75 0.86999995 -0.025 -0.75 0.48999995</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_159473391-positions-array" count="36" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="plate_geometry_159473391-normals">
+          <float_array id="plate_geometry_159473391-normals-array" count="108">0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_159473391-normals-array" count="36" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="plate_geometry_159473391-uvs">
+          <float_array id="plate_geometry_159473391-uvs-array" count="72">0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_159473391-uvs-array" count="36" stride="2">
+              <param name="S" type="float" />
+              <param name="T" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="plate_geometry_159473391-vertices">
+          <input semantic="POSITION" source="#plate_geometry_159473391-positions" />
+        </vertices>
+        <triangles count="12">
+          <input semantic="VERTEX" source="#plate_geometry_159473391-vertices" offset="0" />
+          <input semantic="NORMAL" source="#plate_geometry_159473391-normals" offset="1" />
+          <input semantic="TEXCOORD" source="#plate_geometry_159473391-uvs" offset="2" />
+          <p>0 0 0 1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 7 7 7 8 8 8 9 9 9 10 10 10 11 11 11 12 12 12 13 13 13 14 14 14 15 15 15 16 16 16 17 17 17 18 18 18 19 19 19 20 20 20 21 21 21 22 22 22 23 23 23 24 24 24 25 25 25 26 26 26 27 27 27 28 28 28 29 29 29 30 30 30 31 31 31 32 32 32 33 33 33 34 34 34 35 35 35</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="plate_geometry_159473392" name="Rectangle">
+      <mesh>
+        <source id="plate_geometry_159473392-positions">
+          <float_array id="plate_geometry_159473392-positions-array" count="108">0.025 -0.75 1.7299998 0.025 0.75 1.7299998 0.045 0.75 1.7299998 0.045 -0.75 1.7299998 0.025 -0.75 1.7299998 0.045 0.75 1.7299998 0.025 0.75 1.3499999 0.025 -0.75 1.3499999 0.045 -0.75 1.3499999 0.025 0.75 1.3499999 0.045 -0.75 1.3499999 0.045 0.75 1.3499999 0.045 -0.75 1.7299998 0.045 0.75 1.7299998 0.045 0.75 1.3499999 0.045 -0.75 1.7299998 0.045 0.75 1.3499999 0.045 -0.75 1.3499999 0.025 -0.75 1.3499999 0.025 0.75 1.3499999 0.025 0.75 1.7299998 0.025 -0.75 1.3499999 0.025 0.75 1.7299998 0.025 -0.75 1.7299998 0.025 0.75 1.7299998 0.025 0.75 1.3499999 0.045 0.75 1.3499999 0.025 0.75 1.7299998 0.045 0.75 1.3499999 0.045 0.75 1.7299998 0.025 -0.75 1.3499999 0.025 -0.75 1.7299998 0.045 -0.75 1.7299998 0.025 -0.75 1.3499999 0.045 -0.75 1.7299998 0.045 -0.75 1.3499999</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_159473392-positions-array" count="36" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="plate_geometry_159473392-normals">
+          <float_array id="plate_geometry_159473392-normals-array" count="108">0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_159473392-normals-array" count="36" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="plate_geometry_159473392-uvs">
+          <float_array id="plate_geometry_159473392-uvs-array" count="72">0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_159473392-uvs-array" count="36" stride="2">
+              <param name="S" type="float" />
+              <param name="T" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="plate_geometry_159473392-vertices">
+          <input semantic="POSITION" source="#plate_geometry_159473392-positions" />
+        </vertices>
+        <triangles count="12">
+          <input semantic="VERTEX" source="#plate_geometry_159473392-vertices" offset="0" />
+          <input semantic="NORMAL" source="#plate_geometry_159473392-normals" offset="1" />
+          <input semantic="TEXCOORD" source="#plate_geometry_159473392-uvs" offset="2" />
+          <p>0 0 0 1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 7 7 7 8 8 8 9 9 9 10 10 10 11 11 11 12 12 12 13 13 13 14 14 14 15 15 15 16 16 16 17 17 17 18 18 18 19 19 19 20 20 20 21 21 21 22 22 22 23 23 23 24 24 24 25 25 25 26 26 26 27 27 27 28 28 28 29 29 29 30 30 30 31 31 31 32 32 32 33 33 33 34 34 34 35 35 35</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="plate_geometry_159473393" name="Rectangle">
+      <mesh>
+        <source id="plate_geometry_159473393-positions">
+          <float_array id="plate_geometry_159473393-positions-array" count="108">0.025 -0.75 1.3 0.025 0.75 1.3 0.045 0.75 1.3 0.045 -0.75 1.3 0.025 -0.75 1.3 0.045 0.75 1.3 0.025 0.75 0.9199999 0.025 -0.75 0.9199999 0.045 -0.75 0.9199999 0.025 0.75 0.9199999 0.045 -0.75 0.9199999 0.045 0.75 0.9199999 0.045 -0.75 1.3 0.045 0.75 1.3 0.045 0.75 0.9199999 0.045 -0.75 1.3 0.045 0.75 0.9199999 0.045 -0.75 0.9199999 0.025 -0.75 0.9199999 0.025 0.75 0.9199999 0.025 0.75 1.3 0.025 -0.75 0.9199999 0.025 0.75 1.3 0.025 -0.75 1.3 0.025 0.75 1.3 0.025 0.75 0.9199999 0.045 0.75 0.9199999 0.025 0.75 1.3 0.045 0.75 0.9199999 0.045 0.75 1.3 0.025 -0.75 0.9199999 0.025 -0.75 1.3 0.045 -0.75 1.3 0.025 -0.75 0.9199999 0.045 -0.75 1.3 0.045 -0.75 0.9199999</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_159473393-positions-array" count="36" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="plate_geometry_159473393-normals">
+          <float_array id="plate_geometry_159473393-normals-array" count="108">0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_159473393-normals-array" count="36" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="plate_geometry_159473393-uvs">
+          <float_array id="plate_geometry_159473393-uvs-array" count="72">0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_159473393-uvs-array" count="36" stride="2">
+              <param name="S" type="float" />
+              <param name="T" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="plate_geometry_159473393-vertices">
+          <input semantic="POSITION" source="#plate_geometry_159473393-positions" />
+        </vertices>
+        <triangles count="12">
+          <input semantic="VERTEX" source="#plate_geometry_159473393-vertices" offset="0" />
+          <input semantic="NORMAL" source="#plate_geometry_159473393-normals" offset="1" />
+          <input semantic="TEXCOORD" source="#plate_geometry_159473393-uvs" offset="2" />
+          <p>0 0 0 1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 7 7 7 8 8 8 9 9 9 10 10 10 11 11 11 12 12 12 13 13 13 14 14 14 15 15 15 16 16 16 17 17 17 18 18 18 19 19 19 20 20 20 21 21 21 22 22 22 23 23 23 24 24 24 25 25 25 26 26 26 27 27 27 28 28 28 29 29 29 30 30 30 31 31 31 32 32 32 33 33 33 34 34 34 35 35 35</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="plate_geometry_159473394" name="Rectangle">
+      <mesh>
+        <source id="plate_geometry_159473394-positions">
+          <float_array id="plate_geometry_159473394-positions-array" count="108">0.025 -0.75 0.86999995 0.025 0.75 0.86999995 0.045 0.75 0.86999995 0.045 -0.75 0.86999995 0.025 -0.75 0.86999995 0.045 0.75 0.86999995 0.025 0.75 0.48999995 0.025 -0.75 0.48999995 0.045 -0.75 0.48999995 0.025 0.75 0.48999995 0.045 -0.75 0.48999995 0.045 0.75 0.48999995 0.045 -0.75 0.86999995 0.045 0.75 0.86999995 0.045 0.75 0.48999995 0.045 -0.75 0.86999995 0.045 0.75 0.48999995 0.045 -0.75 0.48999995 0.025 -0.75 0.48999995 0.025 0.75 0.48999995 0.025 0.75 0.86999995 0.025 -0.75 0.48999995 0.025 0.75 0.86999995 0.025 -0.75 0.86999995 0.025 0.75 0.86999995 0.025 0.75 0.48999995 0.045 0.75 0.48999995 0.025 0.75 0.86999995 0.045 0.75 0.48999995 0.045 0.75 0.86999995 0.025 -0.75 0.48999995 0.025 -0.75 0.86999995 0.045 -0.75 0.86999995 0.025 -0.75 0.48999995 0.045 -0.75 0.86999995 0.045 -0.75 0.48999995</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_159473394-positions-array" count="36" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="plate_geometry_159473394-normals">
+          <float_array id="plate_geometry_159473394-normals-array" count="108">0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_159473394-normals-array" count="36" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="plate_geometry_159473394-uvs">
+          <float_array id="plate_geometry_159473394-uvs-array" count="72">0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_159473394-uvs-array" count="36" stride="2">
+              <param name="S" type="float" />
+              <param name="T" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="plate_geometry_159473394-vertices">
+          <input semantic="POSITION" source="#plate_geometry_159473394-positions" />
+        </vertices>
+        <triangles count="12">
+          <input semantic="VERTEX" source="#plate_geometry_159473394-vertices" offset="0" />
+          <input semantic="NORMAL" source="#plate_geometry_159473394-normals" offset="1" />
+          <input semantic="TEXCOORD" source="#plate_geometry_159473394-uvs" offset="2" />
+          <p>0 0 0 1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 7 7 7 8 8 8 9 9 9 10 10 10 11 11 11 12 12 12 13 13 13 14 14 14 15 15 15 16 16 16 17 17 17 18 18 18 19 19 19 20 20 20 21 21 21 22 22 22 23 23 23 24 24 24 25 25 25 26 26 26 27 27 27 28 28 28 29 29 29 30 30 30 31 31 31 32 32 32 33 33 33 34 34 34 35 35 35</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="plate_geometry_159473395" name="Rectangle">
+      <mesh>
+        <source id="plate_geometry_159473395-positions">
+          <float_array id="plate_geometry_159473395-positions-array" count="108">-0.75 0.015000001 2.59 0.75 0.015000001 2.59 0.75 0.035 2.59 -0.75 0.035 2.59 -0.75 0.015000001 2.59 0.75 0.035 2.59 0.75 0.015000001 2.2099998 -0.75 0.015000001 2.2099998 -0.75 0.035 2.2099998 0.75 0.015000001 2.2099998 -0.75 0.035 2.2099998 0.75 0.035 2.2099998 -0.75 0.035 2.59 0.75 0.035 2.59 0.75 0.035 2.2099998 -0.75 0.035 2.59 0.75 0.035 2.2099998 -0.75 0.035 2.2099998 -0.75 0.015000001 2.2099998 0.75 0.015000001 2.2099998 0.75 0.015000001 2.59 -0.75 0.015000001 2.2099998 0.75 0.015000001 2.59 -0.75 0.015000001 2.59 0.75 0.015000001 2.59 0.75 0.015000001 2.2099998 0.75 0.035 2.2099998 0.75 0.015000001 2.59 0.75 0.035 2.2099998 0.75 0.035 2.59 -0.75 0.015000001 2.2099998 -0.75 0.015000001 2.59 -0.75 0.035 2.59 -0.75 0.015000001 2.2099998 -0.75 0.035 2.59 -0.75 0.035 2.2099998</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_159473395-positions-array" count="36" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="plate_geometry_159473395-normals">
+          <float_array id="plate_geometry_159473395-normals-array" count="108">0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_159473395-normals-array" count="36" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="plate_geometry_159473395-uvs">
+          <float_array id="plate_geometry_159473395-uvs-array" count="72">0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_159473395-uvs-array" count="36" stride="2">
+              <param name="S" type="float" />
+              <param name="T" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="plate_geometry_159473395-vertices">
+          <input semantic="POSITION" source="#plate_geometry_159473395-positions" />
+        </vertices>
+        <triangles count="12">
+          <input semantic="VERTEX" source="#plate_geometry_159473395-vertices" offset="0" />
+          <input semantic="NORMAL" source="#plate_geometry_159473395-normals" offset="1" />
+          <input semantic="TEXCOORD" source="#plate_geometry_159473395-uvs" offset="2" />
+          <p>0 0 0 1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 7 7 7 8 8 8 9 9 9 10 10 10 11 11 11 12 12 12 13 13 13 14 14 14 15 15 15 16 16 16 17 17 17 18 18 18 19 19 19 20 20 20 21 21 21 22 22 22 23 23 23 24 24 24 25 25 25 26 26 26 27 27 27 28 28 28 29 29 29 30 30 30 31 31 31 32 32 32 33 33 33 34 34 34 35 35 35</p>
+        </triangles>
+      </mesh>
+    </geometry>
+    <geometry id="plate_geometry_159473396" name="Rectangle">
+      <mesh>
+        <source id="plate_geometry_159473396-positions">
+          <float_array id="plate_geometry_159473396-positions-array" count="108">-0.75 0.015000001 2.1599998 0.75 0.015000001 2.1599998 0.75 0.035 2.1599998 -0.75 0.035 2.1599998 -0.75 0.015000001 2.1599998 0.75 0.035 2.1599998 0.75 0.015000001 1.7799997 -0.75 0.015000001 1.7799997 -0.75 0.035 1.7799997 0.75 0.015000001 1.7799997 -0.75 0.035 1.7799997 0.75 0.035 1.7799997 -0.75 0.035 2.1599998 0.75 0.035 2.1599998 0.75 0.035 1.7799997 -0.75 0.035 2.1599998 0.75 0.035 1.7799997 -0.75 0.035 1.7799997 -0.75 0.015000001 1.7799997 0.75 0.015000001 1.7799997 0.75 0.015000001 2.1599998 -0.75 0.015000001 1.7799997 0.75 0.015000001 2.1599998 -0.75 0.015000001 2.1599998 0.75 0.015000001 2.1599998 0.75 0.015000001 1.7799997 0.75 0.035 1.7799997 0.75 0.015000001 2.1599998 0.75 0.035 1.7799997 0.75 0.035 2.1599998 -0.75 0.015000001 1.7799997 -0.75 0.015000001 2.1599998 -0.75 0.035 2.1599998 -0.75 0.015000001 1.7799997 -0.75 0.035 2.1599998 -0.75 0.035 1.7799997</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_159473396-positions-array" count="36" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="plate_geometry_159473396-normals">
+          <float_array id="plate_geometry_159473396-normals-array" count="108">0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0 -1 0 0</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_159473396-normals-array" count="36" stride="3">
+              <param name="X" type="float" />
+              <param name="Y" type="float" />
+              <param name="Z" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <source id="plate_geometry_159473396-uvs">
+          <float_array id="plate_geometry_159473396-uvs-array" count="72">0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0 0 1 1 1 1 0 0 1 1 0 0 0</float_array>
+          <technique_common>
+            <accessor source="#plate_geometry_159473396-uvs-array" count="36" stride="2">
+              <param name="S" type="float" />
+              <param name="T" type="float" />
+            </accessor>
+          </technique_common>
+        </source>
+        <vertices id="plate_geometry_159473396-vertices">
+          <input semantic="POSITION" source="#plate_geometry_159473396-positions" />
+        </vertices>
+        <triangles count="12">
+          <input semantic="VERTEX" source="#plate_geometry_159473396-vertices" offset="0" />
+          <input semantic="NORMAL" source="#plate_geometry_159473396-normals" offset="1" />
+          <input semantic="TEXCOORD" source="#plate_geometry_159473396-uvs" offset="2" />
+          <p>0 0 0 1 1 1 2 2 2 3 3 3 4 4 4 5 5 5 6 6 6 7 7 7 8 8 8 9 9 9 10 10 10 11 11 11 12 12 12 13 13 13 14 14 14 15 15 15 16 16 16 17 17 17 18 18 18 19 19 19 20 20 20 21 21 21 22 22 22 23 23 23 24 24 24 25 25 25 26 26 26 27 27 27 28 28 28 29 29 29 30 30 30 31 31 31 32 32 32 33 33 33 34 34 34 35 35 35</p>
+        </triangles>
+      </mesh>
+    </geometry>
+  </library_geometries>
+  <library_visual_scenes>
+    <visual_scene id="Scene" name="Scene">
+      <node id="sign_root" name="sign_root" type="NODE" />
+      <node id="post" name="post" type="NODE">
+        <instance_geometry url="#post_geometry_0">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="material0" target="#sign_material" />
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <node id="bracket" name="bracket" type="NODE">
+        <translate sid="translation">0 0 2.0</translate>
+        <instance_geometry url="#bracket_geometry_1" />
+      </node>
+      <node id="plate_86278830" name="plate_713.H - Vanlig vegviser, Høyre" type="NODE">
+        <instance_geometry url="#plate_geometry_86278830">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="material0" target="#sign_material" />
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <node id="plate_86278832" name="plate_713.H - Vanlig vegviser, Høyre" type="NODE">
+        <instance_geometry url="#plate_geometry_86278832">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="material0" target="#sign_material" />
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <node id="plate_159473391" name="plate_713.H - Vanlig vegviser, Høyre" type="NODE">
+        <instance_geometry url="#plate_geometry_159473391">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="material0" target="#sign_material" />
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <node id="plate_159473392" name="plate_713.V - Vanlig vegviser, Venstre" type="NODE">
+        <instance_geometry url="#plate_geometry_159473392">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="material0" target="#sign_material" />
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <node id="plate_159473393" name="plate_713.V - Vanlig vegviser, Venstre" type="NODE">
+        <instance_geometry url="#plate_geometry_159473393">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="material0" target="#sign_material" />
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <node id="plate_159473394" name="plate_713.V - Vanlig vegviser, Venstre" type="NODE">
+        <instance_geometry url="#plate_geometry_159473394">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="material0" target="#sign_material" />
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <node id="plate_159473395" name="plate_713.H - Vanlig vegviser, Høyre" type="NODE">
+        <instance_geometry url="#plate_geometry_159473395">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="material0" target="#sign_material" />
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+      <node id="plate_159473396" name="plate_713.V - Vanlig vegviser, Venstre" type="NODE">
+        <instance_geometry url="#plate_geometry_159473396">
+          <bind_material>
+            <technique_common>
+              <instance_material symbol="material0" target="#sign_material" />
+            </technique_common>
+          </bind_material>
+        </instance_geometry>
+      </node>
+    </visual_scene>
+  </library_visual_scenes>
+</COLLADA>

@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/NorwegianRoadSigns.Console/NorwegianRoadSigns.Console.csproj" />
+    <Project Path="src/NorwegianRoadSigns/NorwegianRoadSigns.csproj" />
+  </Folder>
+</Solution>
