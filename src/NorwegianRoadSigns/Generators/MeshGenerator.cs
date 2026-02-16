@@ -165,6 +165,111 @@ public class MeshGenerator
         return mesh;
     }
 
+    public Mesh CreateDirectionalRectangle713(float width, float height, bool arrowRight, float thickness = DefaultThickness, float sideOffsetX = 0, float sideOffsetY = 0)
+    {
+        var mesh = new Mesh { Name = "DirectionalRectangle713" };
+
+        var hw = width / 2;
+        var hh = height / 2;
+        var ht = thickness / 2;
+        var tipInset = width * 0.12f;
+
+        var frontY = -ht;
+        var backY = ht;
+
+        var front = arrowRight
+            ? new List<Vector3>
+            {
+                new(-hw, frontY, -hh),
+                new(hw - tipInset, frontY, -hh),
+                new(hw, frontY, 0),
+                new(hw - tipInset, frontY, hh),
+                new(-hw, frontY, hh)
+            }
+            : new List<Vector3>
+            {
+                new(-hw + tipInset, frontY, -hh),
+                new(hw, frontY, -hh),
+                new(hw, frontY, hh),
+                new(-hw + tipInset, frontY, hh),
+                new(-hw, frontY, 0)
+            };
+
+        var back = front.Select(v => new Vector3(v.X, backY, v.Z)).ToList();
+
+        void AddTriangle(Vector3 a, Vector3 b, Vector3 c, Vector3 normal, Vector2 ua, Vector2 ub, Vector2 uc)
+        {
+            var baseIdx = mesh.Vertices.Count;
+            mesh.Vertices.Add(WithSideOffset(a, sideOffsetX, sideOffsetY));
+            mesh.Vertices.Add(WithSideOffset(b, sideOffsetX, sideOffsetY));
+            mesh.Vertices.Add(WithSideOffset(c, sideOffsetX, sideOffsetY));
+
+            mesh.Normals.Add(normal);
+            mesh.Normals.Add(normal);
+            mesh.Normals.Add(normal);
+
+            mesh.UVs.Add(ua);
+            mesh.UVs.Add(ub);
+            mesh.UVs.Add(uc);
+
+            mesh.Indices.Add(baseIdx);
+            mesh.Indices.Add(baseIdx + 1);
+            mesh.Indices.Add(baseIdx + 2);
+        }
+
+        Vector2 ToPlanarUv(Vector3 p)
+        {
+            var u = (p.X + hw) / width;
+            var v = (hh - p.Z) / height;
+            return new Vector2(u, v);
+        }
+
+        // Front face
+        for (int i = 1; i < front.Count - 1; i++)
+        {
+            AddTriangle(
+                front[0],
+                front[i],
+                front[i + 1],
+                new Vector3(0, -1, 0),
+                ToPlanarUv(front[0]),
+                ToPlanarUv(front[i]),
+                ToPlanarUv(front[i + 1]));
+        }
+
+        // Back face
+        for (int i = 1; i < back.Count - 1; i++)
+        {
+            AddTriangle(
+                back[0],
+                back[i + 1],
+                back[i],
+                new Vector3(0, 1, 0),
+                ToPlanarUv(back[0]),
+                ToPlanarUv(back[i + 1]),
+                ToPlanarUv(back[i]));
+        }
+
+        // Side walls
+        for (int i = 0; i < front.Count; i++)
+        {
+            var j = (i + 1) % front.Count;
+            var f0 = front[i];
+            var f1 = front[j];
+            var b0 = back[i];
+            var b1 = back[j];
+
+            var edgeX = f1.X - f0.X;
+            var edgeZ = f1.Z - f0.Z;
+            var normal = new Vector3(edgeZ, 0, -edgeX).Normalize();
+
+            AddTriangle(f0, f1, b1, normal, new Vector2(0, 1), new Vector2(1, 1), new Vector2(1, 0));
+            AddTriangle(f0, b1, b0, normal, new Vector2(0, 1), new Vector2(1, 0), new Vector2(0, 0));
+        }
+
+        return mesh;
+    }
+
     public Mesh CreateTriangle(float size, float thickness = DefaultThickness, float sideOffsetX = 0, float sideOffsetY = 0)
     {
         var mesh = new Mesh { Name = "Triangle" };

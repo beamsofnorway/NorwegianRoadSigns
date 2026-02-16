@@ -269,8 +269,18 @@ public class SignGenerator
                         mesh = _meshGenerator.CreateOctagon(Math.Min(width, height), 0.02f, 0, 0);
                         break;
                     default:
-                        // Always create width in X, height in Z - we'll manually rotate for mot/i
-                        mesh = _meshGenerator.CreateRectangle(width, height, 0.02f, 0, 0);
+                        // New staged mesh path for 713 directional signs.
+                        // Legacy rectangle remains fallback for every other sign.
+                        if ((plate.SignNumber ?? string.Empty).StartsWith("713", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var arrowRight = !(plate.Text?.Contains("<-") ?? false);
+                            mesh = _meshGenerator.CreateDirectionalRectangle713(width, height, arrowRight, 0.02f, 0, 0);
+                        }
+                        else
+                        {
+                            // Always create width in X, height in Z - we'll manually rotate for mot/i
+                            mesh = _meshGenerator.CreateRectangle(width, height, 0.02f, 0, 0);
+                        }
                         break;
                 }
                 
