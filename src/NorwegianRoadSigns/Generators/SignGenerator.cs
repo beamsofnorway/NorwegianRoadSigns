@@ -348,8 +348,8 @@ public class SignGenerator
 
     public async Task ToDaeAsync(SignMesh signMesh, string filePath)
     {
-        var directory = Path.GetDirectoryName(filePath);
-        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        var directory = Path.GetDirectoryName(filePath) ?? ".";
+        if (!Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);
         }

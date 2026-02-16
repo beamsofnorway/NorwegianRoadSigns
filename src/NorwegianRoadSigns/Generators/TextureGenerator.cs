@@ -455,11 +455,50 @@ public class TextureGenerator
             return;
         }
 
-        image.Mutate(ctx =>
+        var t = Math.Max(1, lineThickness);
+        var x0 = Math.Max(0, x);
+        var y0 = Math.Max(0, y);
+        var x1 = Math.Min(image.Width - 1, x + width - 1);
+        var y1 = Math.Min(image.Height - 1, y + height - 1);
+
+        if (x0 > x1 || y0 > y1)
         {
-            var rect = new RectangleF(x, y, width, height);
-            ctx.Draw(color, lineThickness, new RectangularPolygon(rect));
-        });
+            return;
+        }
+
+        // Top + bottom strokes
+        for (int yy = y0; yy <= Math.Min(y0 + t - 1, y1); yy++)
+        {
+            for (int xx = x0; xx <= x1; xx++)
+            {
+                image[xx, yy] = color;
+            }
+        }
+
+        for (int yy = Math.Max(y1 - t + 1, y0); yy <= y1; yy++)
+        {
+            for (int xx = x0; xx <= x1; xx++)
+            {
+                image[xx, yy] = color;
+            }
+        }
+
+        // Left + right strokes
+        for (int xx = x0; xx <= Math.Min(x0 + t - 1, x1); xx++)
+        {
+            for (int yy = y0; yy <= y1; yy++)
+            {
+                image[xx, yy] = color;
+            }
+        }
+
+        for (int xx = Math.Max(x1 - t + 1, x0); xx <= x1; xx++)
+        {
+            for (int yy = y0; yy <= y1; yy++)
+            {
+                image[xx, yy] = color;
+            }
+        }
     }
 
     private void DrawAlignedText(
