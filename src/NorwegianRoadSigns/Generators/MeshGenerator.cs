@@ -165,41 +165,19 @@ public class MeshGenerator
         return mesh;
     }
 
-    public Mesh CreateDirectionalRectangle713(float width, float height, bool arrowRight, float thickness = DefaultThickness, float sideOffsetX = 0, float sideOffsetY = 0)
+    public Mesh CreateSegmentedRectangle713(float width, float height, int frontSegmentCount, float thickness = DefaultThickness, float sideOffsetX = 0, float sideOffsetY = 0)
     {
-        var mesh = new Mesh { Name = "DirectionalRectangle713" };
+        var mesh = new Mesh { Name = "SegmentedRectangle713" };
 
         var hw = width / 2;
         var hh = height / 2;
         var ht = thickness / 2;
-        var tipInset = width * 0.12f;
-
-        var frontY = -ht;
-        var backY = ht;
-
-        var front = arrowRight
-            ? new List<Vector3>
-            {
-                new(-hw, frontY, -hh),
-                new(hw - tipInset, frontY, -hh),
-                new(hw, frontY, 0),
-                new(hw - tipInset, frontY, hh),
-                new(-hw, frontY, hh)
-            }
-            : new List<Vector3>
-            {
-                new(-hw + tipInset, frontY, -hh),
-                new(hw, frontY, -hh),
-                new(hw, frontY, hh),
-                new(-hw + tipInset, frontY, hh),
-                new(-hw, frontY, 0)
-            };
-
-        var back = front.Select(v => new Vector3(v.X, backY, v.Z)).ToList();
+        var segments = Math.Max(1, frontSegmentCount);
 
         void AddTriangle(Vector3 a, Vector3 b, Vector3 c, Vector3 normal, Vector2 ua, Vector2 ub, Vector2 uc)
         {
             var baseIdx = mesh.Vertices.Count;
+
             mesh.Vertices.Add(WithSideOffset(a, sideOffsetX, sideOffsetY));
             mesh.Vertices.Add(WithSideOffset(b, sideOffsetX, sideOffsetY));
             mesh.Vertices.Add(WithSideOffset(c, sideOffsetX, sideOffsetY));
@@ -217,55 +195,91 @@ public class MeshGenerator
             mesh.Indices.Add(baseIdx + 2);
         }
 
-        Vector2 ToPlanarUv(Vector3 p)
+        void AddQuad(Vector3 bl, Vector3 br, Vector3 tr, Vector3 tl, Vector3 normal, Vector2 uvBl, Vector2 uvBr, Vector2 uvTr, Vector2 uvTl)
         {
-            var u = (p.X + hw) / width;
-            var v = (hh - p.Z) / height;
-            return new Vector2(u, v);
+            AddTriangle(bl, br, tr, normal, uvBl, uvBr, uvTr);
+            AddTriangle(bl, tr, tl, normal, uvBl, uvTr, uvTl);
         }
 
-        // Front face
-        for (int i = 1; i < front.Count - 1; i++)
+        // Front face: split into multiple vertical segments for UV mapping of arrow/symbol/text boxes.
+        for (int i = 0; i < segments; i++)
         {
-            AddTriangle(
-                front[0],
-                front[i],
-                front[i + 1],
+            var t0 = i / (float)segments;
+            var t1 = (i + 1) / (float)segments;
+            var x0 = -hw + (t0 * width);
+            var x1 = -hw + (t1 * width);
+
+            AddQuad(
+                new Vector3(x0, -ht, -hh),
+                new Vector3(x1, -ht, -hh),
+                new Vector3(x1, -ht, hh),
+                new Vector3(x0, -ht, hh),
                 new Vector3(0, -1, 0),
-                ToPlanarUv(front[0]),
-                ToPlanarUv(front[i]),
-                ToPlanarUv(front[i + 1]));
+                new Vector2(t0, 1),
+                new Vector2(t1, 1),
+                new Vector2(t1, 0),
+                new Vector2(t0, 0));
         }
 
-        // Back face
-        for (int i = 1; i < back.Count - 1; i++)
-        {
-            AddTriangle(
-                back[0],
-                back[i + 1],
-                back[i],
-                new Vector3(0, 1, 0),
-                ToPlanarUv(back[0]),
-                ToPlanarUv(back[i + 1]),
-                ToPlanarUv(back[i]));
-        }
+        // Back face (single quad)
+        AddQuad(
+            new Vector3(hw, ht, -hh),
+            new Vector3(-hw, ht, -hh),
+            new Vector3(-hw, ht, hh),
+            new Vector3(hw, ht, hh),
+            new Vector3(0, 1, 0),
+            new Vector2(0, 1),
+            new Vector2(1, 1),
+            new Vector2(1, 0),
+            new Vector2(0, 0));
 
-        // Side walls
-        for (int i = 0; i < front.Count; i++)
-        {
-            var j = (i + 1) % front.Count;
-            var f0 = front[i];
-            var f1 = front[j];
-            var b0 = back[i];
-            var b1 = back[j];
+        // Top
+        AddQuad(
+            new Vector3(-hw, -ht, hh),
+            new Vector3(hw, -ht, hh),
+            new Vector3(hw, ht, hh),
+            new Vector3(-hw, ht, hh),
+            new Vector3(0, 0, 1),
+            new Vector2(0, 1),
+            new Vector2(1, 1),
+            new Vector2(1, 0),
+            new Vector2(0, 0));
 
-            var edgeX = f1.X - f0.X;
-            var edgeZ = f1.Z - f0.Z;
-            var normal = new Vector3(edgeZ, 0, -edgeX).Normalize();
+        // Bottom
+        AddQuad(
+            new Vector3(-hw, ht, -hh),
+            new Vector3(hw, ht, -hh),
+            new Vector3(hw, -ht, -hh),
+            new Vector3(-hw, -ht, -hh),
+            new Vector3(0, 0, -1),
+            new Vector2(0, 1),
+            new Vector2(1, 1),
+            new Vector2(1, 0),
+            new Vector2(0, 0));
 
-            AddTriangle(f0, f1, b1, normal, new Vector2(0, 1), new Vector2(1, 1), new Vector2(1, 0));
-            AddTriangle(f0, b1, b0, normal, new Vector2(0, 1), new Vector2(1, 0), new Vector2(0, 0));
-        }
+        // Right
+        AddQuad(
+            new Vector3(hw, -ht, -hh),
+            new Vector3(hw, ht, -hh),
+            new Vector3(hw, ht, hh),
+            new Vector3(hw, -ht, hh),
+            new Vector3(1, 0, 0),
+            new Vector2(0, 1),
+            new Vector2(1, 1),
+            new Vector2(1, 0),
+            new Vector2(0, 0));
+
+        // Left
+        AddQuad(
+            new Vector3(-hw, ht, -hh),
+            new Vector3(-hw, -ht, -hh),
+            new Vector3(-hw, -ht, hh),
+            new Vector3(-hw, ht, hh),
+            new Vector3(-1, 0, 0),
+            new Vector2(0, 1),
+            new Vector2(1, 1),
+            new Vector2(1, 0),
+            new Vector2(0, 0));
 
         return mesh;
     }

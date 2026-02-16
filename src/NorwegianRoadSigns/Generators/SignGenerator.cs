@@ -273,8 +273,8 @@ public class SignGenerator
                         // Legacy rectangle remains fallback for every other sign.
                         if ((plate.SignNumber ?? string.Empty).StartsWith("713", StringComparison.OrdinalIgnoreCase))
                         {
-                            var arrowRight = !(plate.Text?.Contains("<-") ?? false);
-                            mesh = _meshGenerator.CreateDirectionalRectangle713(width, height, arrowRight, 0.02f, 0, 0);
+                            var segmentCount = Estimate713FrontSegmentCount(parsedText);
+                            mesh = _meshGenerator.CreateSegmentedRectangle713(width, height, segmentCount, 0.02f, 0, 0);
                         }
                         else
                         {
@@ -550,6 +550,7 @@ public class SignGenerator
         }
 
         var arrowRight = !(plate.Text?.Contains("<-") ?? false);
+        var symbolBoxCount = parsedText.ElementTokens.Count;
         texture = _textureGenerator.CreateTemplate713OneLineTexture(
             definition,
             plate.Color,
@@ -557,7 +558,8 @@ public class SignGenerator
             targetWidth,
             targetHeight,
             fontHeight,
-            arrowRight);
+            arrowRight,
+            symbolBoxCount);
 
         return texture.Length > 0;
     }
@@ -633,6 +635,26 @@ public class SignGenerator
             targetWidth,
             targetHeight,
             fontHeight);
+    }
+
+
+    private static int Estimate713FrontSegmentCount(ParsedPlateText parsedText)
+    {
+        var arrowSegmentCount = 1;
+        var symbolSegments = Math.Max(0, parsedText.ElementTokens.Count);
+
+        // Keep text area represented by multiple UV-friendly regions:
+        // one base region + one per word, and an extra region when trailing distance number exists.
+        var words = parsedText.DisplayText
+            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        var textSegments = Math.Max(1, words.Length);
+        var trailingDistanceSegment = words.Length > 0 && double.TryParse(words[^1], out _) ? 1 : 0;
+
+        var total = arrowSegmentCount + symbolSegments + textSegments + trailingDistanceSegment;
+
+        // Keep sane bounds so geometry density stays controlled.
+        return Math.Clamp(total, 3, 24);
     }
 
     private static ParsedPlateText ParsePlateText(string? rawText)

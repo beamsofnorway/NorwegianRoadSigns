@@ -4,6 +4,7 @@ using SixLabors.ImageSharp.Processing;
 using SixLabors.Fonts;
 using SixLabors.ImageSharp.Drawing.Processing;
 using NorwegianRoadSigns.Models;
+using System.Text.RegularExpressions;
 
 namespace NorwegianRoadSigns.Generators;
 
@@ -331,71 +332,169 @@ public class TextureGenerator
         int width,
         int height,
         double fontHeight,
-        bool arrowRight)
+        bool arrowRight,
+        int symbolBoxCount = 0)
     {
         using var image = new Image<Rgba32>(width, height);
 
         var backgroundColor = ColorMap.TryGetValue(signColor, out var bg) ? bg : new Rgba32(255, 206, 0, 255);
         var borderColor = ColorMap.TryGetValue(definition.BorderColor, out var bc) ? bc : new Rgba32(0, 0, 0, 255);
 
-        // Outer border background
+        // 713 is rectangular in shape; arrow and symbols are interior elements.
         image.Mutate(ctx => ctx.Fill(borderColor));
 
         var borderThickness = Math.Max(8, (int)(Math.Min(width, height) * 0.04f));
-        var tipInset = Math.Max(24, (int)(width * 0.12f));
+        var innerX = borderThickness;
+        var innerY = borderThickness;
+        var innerWidth = Math.Max(8, width - borderThickness * 2);
+        var innerHeight = Math.Max(8, height - borderThickness * 2);
 
-        var yTop = borderThickness;
-        var yBottom = height - borderThickness;
-        var xLeft = borderThickness;
-        var xRight = width - borderThickness;
+        image.Mutate(ctx => ctx.Fill(backgroundColor, new Rectangle(innerX, innerY, innerWidth, innerHeight)));
 
-        PointF[] innerPolygon;
+        var arrowBoxWidth = Math.Max(48, (int)(width * 0.12f));
+        var symbolBoxWidth = Math.Max(48, (int)(width * 0.12f));
+        int arrowBoxX;
+        int symbolStartX;
+        int textStartX;
+        int textEndX;
+
         if (arrowRight)
         {
-            innerPolygon =
-            [
-                new PointF(xLeft, yTop),
-                new PointF(xRight - tipInset, yTop),
-                new PointF(xRight, height / 2f),
-                new PointF(xRight - tipInset, yBottom),
-                new PointF(xLeft, yBottom)
-            ];
+            arrowBoxX = innerX + innerWidth - arrowBoxWidth;
+            symbolStartX = arrowBoxX - (Math.Max(0, symbolBoxCount) * symbolBoxWidth);
+            textStartX = innerX + borderThickness;
+            textEndX = Math.Max(textStartX + 16, symbolStartX - borderThickness);
         }
         else
         {
-            innerPolygon =
-            [
-                new PointF(xLeft + tipInset, yTop),
-                new PointF(xRight, yTop),
-                new PointF(xRight, yBottom),
-                new PointF(xLeft + tipInset, yBottom),
-                new PointF(xLeft, height / 2f)
-            ];
+            arrowBoxX = innerX;
+            symbolStartX = arrowBoxX + arrowBoxWidth;
+            textStartX = Math.Min(innerX + innerWidth - 16, symbolStartX + (Math.Max(0, symbolBoxCount) * symbolBoxWidth) + borderThickness);
+            textEndX = innerX + innerWidth - borderThickness;
         }
 
-        image.Mutate(ctx => ctx.FillPolygon(backgroundColor, innerPolygon));
+        // Draw arrow box and symbol boxes as explicit interior layout areas.
+        DrawBoxOutline(image, arrowBoxX, innerY, arrowBoxWidth, innerHeight, borderColor, Math.Max(2, borderThickness / 3));
 
-        // Render one-line destination text centered in the primary body of the arrow sign.
-        var fontSize = (int)(fontHeight * height / Math.Max(1, definition.DefaultHeight) * FontSizeMultiplier);
-        if (fontSize < 4) fontSize = 4;
-
-        var textAreaStartX = arrowRight ? xLeft + borderThickness : xLeft + tipInset + borderThickness;
-        var textAreaEndX = arrowRight ? xRight - tipInset - borderThickness : xRight - borderThickness;
-        var textAreaWidth = Math.Max(16, textAreaEndX - textAreaStartX);
+        for (var i = 0; i < Math.Max(0, symbolBoxCount); i++)
+        {
+            var sx = symbolStartX + (i * symbolBoxWidth);
+            DrawBoxOutline(image, sx, innerY, symbolBoxWidth, innerHeight, borderColor, Math.Max(2, borderThickness / 4));
+        }
 
         DrawSimpleText(
             image,
-            text,
-            textAreaWidth,
-            height - (2 * borderThickness),
-            fontSize,
+            arrowRight ? ">" : "<",
+            arrowBoxWidth,
+            innerHeight,
+            Math.Max(10, innerHeight / 2),
             borderColor,
-            textAreaStartX,
-            borderThickness);
+            arrowBoxX,
+            innerY);
+
+        // Text layout: align away from arrow, but keep trailing distance number aligned toward arrow.
+        var textAreaWidth = Math.Max(16, textEndX - textStartX);
+        var normalizedText = Regex.Replace(text ?? string.Empty, @"\s+", " ").Trim();
+        var words = normalizedText.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        var hasTrailingNumber = words.Length > 1 && double.TryParse(words[^1], out _);
+
+        var fontSize = (int)(fontHeight * height / Math.Max(1, definition.DefaultHeight) * FontSizeMultiplier);
+        fontSize = Math.Max(10, fontSize);
+
+        if (hasTrailingNumber)
+        {
+            var distanceText = words[^1];
+            var locationText = string.Join(' ', words.Take(words.Length - 1));
+
+            DrawAlignedText(
+                image,
+                locationText,
+                textStartX,
+                innerY,
+                textAreaWidth,
+                innerHeight,
+                fontSize,
+                borderColor,
+                arrowRight ? HorizontalAlignment.Left : HorizontalAlignment.Right);
+
+            DrawAlignedText(
+                image,
+                distanceText,
+                textStartX,
+                innerY,
+                textAreaWidth,
+                innerHeight,
+                fontSize,
+                borderColor,
+                arrowRight ? HorizontalAlignment.Right : HorizontalAlignment.Left);
+        }
+        else
+        {
+            DrawAlignedText(
+                image,
+                normalizedText,
+                textStartX,
+                innerY,
+                textAreaWidth,
+                innerHeight,
+                fontSize,
+                borderColor,
+                arrowRight ? HorizontalAlignment.Left : HorizontalAlignment.Right);
+        }
 
         using var ms = new MemoryStream();
         image.SaveAsPng(ms);
         return ms.ToArray();
+    }
+
+    private static void DrawBoxOutline(Image<Rgba32> image, int x, int y, int width, int height, Rgba32 color, int lineThickness)
+    {
+        if (width <= 2 || height <= 2)
+        {
+            return;
+        }
+
+        image.Mutate(ctx =>
+        {
+            var rect = new RectangleF(x, y, width, height);
+            ctx.Draw(color, lineThickness, new RectangularPolygon(rect));
+        });
+    }
+
+    private void DrawAlignedText(
+        Image<Rgba32> image,
+        string text,
+        int x,
+        int y,
+        int width,
+        int height,
+        int fontSize,
+        Rgba32 color,
+        HorizontalAlignment alignment)
+    {
+        if (string.IsNullOrWhiteSpace(text))
+        {
+            return;
+        }
+
+        var font = GetFont(fontSize);
+        var padding = Math.Max(4, fontSize / 6);
+        var originX = alignment switch
+        {
+            HorizontalAlignment.Left => x + padding,
+            HorizontalAlignment.Right => x + width - padding,
+            _ => x + width / 2f
+        };
+
+        var options = new RichTextOptions(font)
+        {
+            Origin = new PointF(originX, y + (height / 2f)),
+            HorizontalAlignment = alignment,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+
+        image.Mutate(ctx => ctx.DrawText(options, text, color));
     }
 
     public byte[] GenerateTransparentTextTexture(
