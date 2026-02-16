@@ -165,6 +165,13 @@ public class MeshGenerator
         return mesh;
     }
 
+    public Mesh CreateSegmentedRectangle713(float width, float height, int frontSegmentCount, float thickness = DefaultThickness, float sideOffsetX = 0, float sideOffsetY = 0)
+    {
+        var count = Math.Max(1, frontSegmentCount);
+        var equalWidths = Enumerable.Repeat(1f, count).ToList();
+        return CreateSegmentedRectangle713(width, height, equalWidths, thickness, sideOffsetX, sideOffsetY);
+    }
+
     public Mesh CreateSegmentedRectangle713(float width, float height, IReadOnlyList<float> frontSegmentWidths, float thickness = DefaultThickness, float sideOffsetX = 0, float sideOffsetY = 0)
     {
         var mesh = new Mesh { Name = "SegmentedRectangle713" };
