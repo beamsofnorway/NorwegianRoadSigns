@@ -662,7 +662,7 @@ public class SignGenerator
     {
         var widths = new List<float>();
 
-        var textHeightMeters = ((plate.TextHeight > 0 ? plate.TextHeight : 140.0) / 1000.0f);
+        var textHeightMeters = (float)((plate.TextHeight > 0 ? plate.TextHeight : 140.0) / 1000.0);
         textHeightMeters = Math.Max(textHeightMeters, signHeight * 0.18f);
 
         // Border side is slim. Arrow side is a square.
@@ -683,7 +683,9 @@ public class SignGenerator
         var locationWidths = ToGlyphWidths(locationText, textHeightMeters);
         var distanceWidths = ToGlyphWidths(distanceText, textHeightMeters * 0.95f);
 
-        var textGap = (locationWidths.Count > 0 && distanceWidths.Count > 0) ? Math.Max(signWidth * 0.012f, textHeightMeters * 0.25f) : 0f;
+        var textGap = (locationWidths.Count > 0 && distanceWidths.Count > 0)
+            ? Math.Max(signWidth * 0.012f, textHeightMeters * 0.25f)
+            : 0f;
 
         var contentWidth = borderSideWidth + arrowSideWidth + symbolBlockWidth + locationWidths.Sum() + distanceWidths.Sum() + textGap;
         var filler = Math.Max(0f, signWidth - contentWidth);
