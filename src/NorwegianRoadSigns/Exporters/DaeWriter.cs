@@ -17,9 +17,10 @@ public class DaeWriter
                 new XAttribute("version", "1.4.1"),
                 new XAttribute(XNamespace.Xmlns + "xml", "http://www.w3.org/XML/1998/namespace"),
                 GenerateAsset(),
+                GenerateLibraryImages(signMesh, texturePath),
                 GenerateLibraryGeometries(signMesh),
-                GenerateLibraryMaterials(),
-                GenerateLibraryEffects(),
+                GenerateLibraryMaterials(signMesh),
+                GenerateLibraryEffects(signMesh),
                 GenerateLibraryVisualScenes(signMesh),
                 GenerateScene()
             )
@@ -85,35 +86,132 @@ public class DaeWriter
         return new XElement(XName.Get("library_images", DaeNamespace), images);
     }
 
-    private XElement GenerateLibraryMaterials()
+    private XElement GenerateLibraryMaterials(SignMesh signMesh)
     {
-        return new XElement(XName.Get("library_materials", DaeNamespace),
-            new XElement(XName.Get("material", DaeNamespace),
-                new XAttribute("id", "sign_material"),
-                new XAttribute("name", "sign_material"),
+        var materials = new List<XElement>();
+
+        // Add fallback materials for post and bracket
+        if (signMesh.Post.Vertices.Count > 0)
+        {
+            materials.Add(new XElement(XName.Get("material", DaeNamespace),
+                new XAttribute("id", "post_material"),
+                new XAttribute("name", "post_material"),
                 new XElement(XName.Get("instance_effect", DaeNamespace),
-                    new XAttribute("url", "#sign_effect")
+                    new XAttribute("url", "#post_material_effect")
+                )
+            ));
+        }
+
+        if (signMesh.Bracket.Vertices.Count > 0)
+        {
+            materials.Add(new XElement(XName.Get("material", DaeNamespace),
+                new XAttribute("id", "bracket_material"),
+                new XAttribute("name", "bracket_material"),
+                new XElement(XName.Get("instance_effect", DaeNamespace),
+                    new XAttribute("url", "#bracket_material_effect")
+                )
+            ));
+        }
+
+        foreach (var plate in signMesh.Plates)
+        {
+            var materialId = plate.TextureName ?? $"plate_{plate.Plate.Id}";
+            materials.Add(new XElement(XName.Get("material", DaeNamespace),
+                new XAttribute("id", materialId),
+                new XAttribute("name", materialId),
+                new XElement(XName.Get("instance_effect", DaeNamespace),
+                    new XAttribute("url", $"#{materialId}_effect")
+                )
+            ));
+        }
+
+        return new XElement(XName.Get("library_materials", DaeNamespace), materials);
+    }
+
+    private XElement GenerateLibraryEffects(SignMesh signMesh)
+    {
+        var effects = new List<XElement>();
+
+        // Add fallback effects for post and bracket (color only, no texture)
+        if (signMesh.Post.Vertices.Count > 0)
+        {
+            effects.Add(CreateColorEffect("post_material_effect", "0.6 0.3 0.3 1.0"));
+        }
+
+        if (signMesh.Bracket.Vertices.Count > 0)
+        {
+            effects.Add(CreateColorEffect("bracket_material_effect", "0.5 0.5 0.5 1.0"));
+        }
+
+        foreach (var plate in signMesh.Plates)
+        {
+            var materialId = plate.TextureName ?? $"plate_{plate.Plate.Id}";
+            var hasTexture = !string.IsNullOrEmpty(plate.TextureName);
+
+            if (hasTexture && plate.TextureName != null)
+            {
+                effects.Add(CreateTexturedEffect(materialId, plate.TextureName));
+            }
+            else
+            {
+                effects.Add(CreateColorEffect($"{materialId}_effect", "0.8 0.4 0.4 1.0"));
+            }
+        }
+
+        return new XElement(XName.Get("library_effects", DaeNamespace), effects);
+    }
+
+    private XElement CreateColorEffect(string effectId, string color)
+    {
+        return new XElement(XName.Get("effect", DaeNamespace),
+            new XAttribute("id", effectId),
+            new XElement(XName.Get("profile_COMMON", DaeNamespace),
+                new XElement(XName.Get("technique", DaeNamespace),
+                    new XAttribute("sid", "common"),
+                    new XElement(XName.Get("lambert", DaeNamespace),
+                        new XElement(XName.Get("diffuse", DaeNamespace),
+                            new XElement(XName.Get("color", DaeNamespace), color)
+                        )
+                    )
                 )
             )
         );
     }
 
-    private XElement GenerateLibraryEffects()
+    private XElement CreateTexturedEffect(string materialId, string textureName)
     {
-        return new XElement(XName.Get("library_effects", DaeNamespace),
-            new XElement(XName.Get("effect", DaeNamespace),
-                new XAttribute("id", "sign_effect"),
-                new XElement(XName.Get("profile_COMMON", DaeNamespace),
-                    new XElement(XName.Get("technique", DaeNamespace),
-                        new XAttribute("sid", "common"),
-                        new XElement(XName.Get("lambert", DaeNamespace),
-                            new XElement(XName.Get("diffuse", DaeNamespace),
-                                new XElement(XName.Get("color", DaeNamespace), "0.8 0.4 0.4 1.0")
-                            )
-                        )
+        var profile = new XElement(XName.Get("profile_COMMON", DaeNamespace));
+
+        profile.Add(new XElement(XName.Get("newparam", DaeNamespace),
+            new XAttribute("sid", $"{materialId}-surface"),
+            new XElement(XName.Get("surface", DaeNamespace),
+                new XAttribute("type", "2D"),
+                new XElement(XName.Get("init_from", DaeNamespace), textureName)
+            )
+        ));
+
+        profile.Add(new XElement(XName.Get("newparam", DaeNamespace),
+            new XAttribute("sid", $"{materialId}-sampler"),
+            new XElement(XName.Get("sampler2D", DaeNamespace),
+                new XElement(XName.Get("source", DaeNamespace), $"{materialId}-surface")
+            )
+        ));
+
+        profile.Add(new XElement(XName.Get("technique", DaeNamespace),
+            new XAttribute("sid", "common"),
+            new XElement(XName.Get("lambert", DaeNamespace),
+                new XElement(XName.Get("diffuse", DaeNamespace),
+                    new XElement(XName.Get("texture", DaeNamespace),
+                        new XAttribute("texture", $"{materialId}-sampler"),
+                        new XAttribute("texcoord", "map-0")
                     )
                 )
             )
+        ));
+
+        return new XElement(XName.Get("effect", DaeNamespace),
+            new XAttribute("id", $"{materialId}_effect"),
+            profile
         );
     }
 
@@ -125,13 +223,13 @@ public class DaeWriter
         // Post mesh
         if (signMesh.Post.Vertices.Count > 0)
         {
-            geometries.Add(GenerateGeometryMesh(signMesh.Post, $"post_geometry_{meshId++}"));
+            geometries.Add(GenerateGeometryMesh(signMesh.Post, $"post_geometry_{meshId++}", "post_material"));
         }
 
         // Bracket mesh
         if (signMesh.Bracket.Vertices.Count > 0)
         {
-            geometries.Add(GenerateGeometryMesh(signMesh.Bracket, $"bracket_geometry_{meshId++}"));
+            geometries.Add(GenerateGeometryMesh(signMesh.Bracket, $"bracket_geometry_{meshId++}", "bracket_material"));
         }
 
         // Plate meshes
@@ -139,14 +237,15 @@ public class DaeWriter
         {
             if (plate.Mesh.Vertices.Count > 0)
             {
-                geometries.Add(GenerateGeometryMesh(plate.Mesh, $"plate_geometry_{plate.Plate.Id}"));
+                var materialId = plate.TextureName ?? $"plate_{plate.Plate.Id}";
+                geometries.Add(GenerateGeometryMesh(plate.Mesh, $"plate_geometry_{plate.Plate.Id}", materialId));
             }
         }
 
         return new XElement(XName.Get("library_geometries", DaeNamespace), geometries);
     }
 
-    private XElement GenerateGeometryMesh(Mesh mesh, string id)
+    private XElement GenerateGeometryMesh(Mesh mesh, string id, string materialId)
     {
         var positions = new StringBuilder();
         var normals = new StringBuilder();
@@ -264,7 +363,7 @@ public class DaeWriter
                 // Triangles
                 new XElement(XName.Get("triangles", DaeNamespace),
                     new XAttribute("count", mesh.Indices.Count / 3),
-                    new XAttribute("material", "sign_material"),
+                    new XAttribute("material", materialId),
                     new XElement(XName.Get("input", DaeNamespace),
                         new XAttribute("semantic", "VERTEX"),
                         new XAttribute("source", $"#{id}-vertices"),
@@ -347,8 +446,13 @@ public class DaeWriter
                     new XElement(XName.Get("bind_material", DaeNamespace),
                         new XElement(XName.Get("technique_common", DaeNamespace),
                             new XElement(XName.Get("instance_material", DaeNamespace),
-                                new XAttribute("symbol", "sign_material"),
-                                new XAttribute("target", "#sign_material")
+                                new XAttribute("symbol", "post_material"),
+                                new XAttribute("target", "#post_material"),
+                                new XElement(XName.Get("bind_vertex_input", DaeNamespace),
+                                    new XAttribute("semantic", "TEXCOORD"),
+                                    new XAttribute("input_semantic", "TEXCOORD"),
+                                    new XAttribute("input_set", 0)
+                                )
                             )
                         )
                     )
@@ -367,8 +471,13 @@ public class DaeWriter
                     new XElement(XName.Get("bind_material", DaeNamespace),
                         new XElement(XName.Get("technique_common", DaeNamespace),
                             new XElement(XName.Get("instance_material", DaeNamespace),
-                                new XAttribute("symbol", "sign_material"),
-                                new XAttribute("target", "#sign_material")
+                                new XAttribute("symbol", "bracket_material"),
+                                new XAttribute("target", "#bracket_material"),
+                                new XElement(XName.Get("bind_vertex_input", DaeNamespace),
+                                    new XAttribute("semantic", "TEXCOORD"),
+                                    new XAttribute("input_semantic", "TEXCOORD"),
+                                    new XAttribute("input_set", 0)
+                                )
                             )
                         )
                     )
@@ -381,6 +490,7 @@ public class DaeWriter
         {
             if (plate.Mesh.Vertices.Count > 0)
             {
+                var materialId = plate.TextureName ?? $"plate_{plate.Plate.Id}";
                 leafNodes.Add(new XElement(XName.Get("node", DaeNamespace),
                     new XAttribute("id", $"plate_{plate.Plate.Id}"),
                     new XAttribute("name", $"plate_{plate.Plate.SignNumber ?? plate.Plate.Id.ToString()}"),
@@ -389,8 +499,13 @@ public class DaeWriter
                         new XElement(XName.Get("bind_material", DaeNamespace),
                             new XElement(XName.Get("technique_common", DaeNamespace),
                                 new XElement(XName.Get("instance_material", DaeNamespace),
-                                    new XAttribute("symbol", "sign_material"),
-                                    new XAttribute("target", "#sign_material")
+                                    new XAttribute("symbol", materialId),
+                                    new XAttribute("target", $"#{materialId}"),
+                                    new XElement(XName.Get("bind_vertex_input", DaeNamespace),
+                                        new XAttribute("semantic", "TEXCOORD"),
+                                        new XAttribute("input_semantic", "TEXCOORD"),
+                                        new XAttribute("input_set", 0)
+                                    )
                                 )
                             )
                         )

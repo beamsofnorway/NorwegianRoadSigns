@@ -1,8 +1,9 @@
 using NorwegianRoadSigns.Clients;
 using NorwegianRoadSigns.Data;
+using NorwegianRoadSigns.Exporters;
 using NorwegianRoadSigns.Generators;
 using NorwegianRoadSigns.Models;
-using NorwegianRoadSigns.Exporters;
+using System.Text.RegularExpressions;
 
 namespace NorwegianRoadSigns.Generators;
 
@@ -242,6 +243,15 @@ public class SignGenerator
             
             foreach (var plate in sortedPlates)
             {
+                //This is removing codes that reprecent symbols that need to go on the signs, keep that in mind for later...
+                string result = Regex.Replace(
+                                plate.Text,
+                                @"^\s*@\d+(?:\.\d+)?@(?:\$\d+\$)?\s*|\s*@\d+(?:\.\d+)?@(?:\$\d+\$)?\s*$",
+                                ""
+                );
+
+                if (result.Length > 0) plate.Text = result;
+
                 var definition = _definitionDb.Get(plate.SignNumber ?? "");
                 double rawWidth = plate.Width > 0 ? Math.Min(plate.Width / 1000.0, 1.5) : (definition?.DefaultWidth / 1000.0 ?? 0.6);
                 float width = (float)rawWidth;
