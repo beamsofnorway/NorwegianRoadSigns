@@ -640,21 +640,23 @@ public class SignGenerator
 
     private static int Estimate713FrontSegmentCount(ParsedPlateText parsedText)
     {
-        var arrowSegmentCount = 1;
+        // One fixed start/end control region on the plate front:
+        // - one for the arrow side
+        // - one for the opposite end cap / border side
+        var edgeControlSegments = 2;
+
+        // Optional dedicated symbol regions between edge controls and text.
         var symbolSegments = Math.Max(0, parsedText.ElementTokens.Count);
 
-        // Keep text area represented by multiple UV-friendly regions:
-        // one base region + one per word, and an extra region when trailing distance number exists.
-        var words = parsedText.DisplayText
-            .Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        // Use character-driven segmentation for text so each glyph slot can map to a UV box.
+        // Keep spaces as their own slots to preserve visual rhythm (e.g. "Nodeland 25" => 11).
+        var normalizedText = Regex.Replace(parsedText.DisplayText ?? string.Empty, @"\s+", " ").Trim();
+        var textSegments = Math.Max(1, normalizedText.Length);
 
-        var textSegments = Math.Max(1, words.Length);
-        var trailingDistanceSegment = words.Length > 0 && double.TryParse(words[^1], out _) ? 1 : 0;
+        var total = edgeControlSegments + symbolSegments + textSegments;
 
-        var total = arrowSegmentCount + symbolSegments + textSegments + trailingDistanceSegment;
-
-        // Keep sane bounds so geometry density stays controlled.
-        return Math.Clamp(total, 3, 24);
+        // Allow denser layouts than before for longer destination names.
+        return Math.Clamp(total, 4, 128);
     }
 
     private static ParsedPlateText ParsePlateText(string? rawText)
