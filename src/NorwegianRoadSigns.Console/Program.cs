@@ -3,7 +3,7 @@ using NorwegianRoadSigns.Generators;
 
 Console.WriteLine("Norwegian Road Signs - 3D Model Generator");
 Console.WriteLine("===========================================");
-
+var testId = 86278839;
 var command = args.Length > 0 ? args[0].ToLower() : "nvdb";
 
 switch (command)
@@ -63,7 +63,7 @@ async Task RunNvdbGenerator()
 
     try
     {
-        var signPointId = 86278833;
+        var signPointId = testId;
         var signMesh = await generator.CreateFromNvdbAsync(signPointId);
         
         Console.WriteLine($"Successfully fetched sign point {signPointId}");
@@ -78,7 +78,7 @@ async Task RunNvdbGenerator()
         }
         
         Console.WriteLine("\nGenerating DAE file...");
-        var outputPath = "output/sign_86278833.dae";
+        var outputPath = $"output/sign_{testId}.dae";
         await generator.ToDaeAsync(signMesh, outputPath);
         
         Console.WriteLine($"DAE saved to: {outputPath}");
@@ -98,7 +98,7 @@ async Task RunNvdbGenerator()
     }
 
     Console.WriteLine("\n--- Testing different sign types ---");
-    var testIds = new[] { 86278833 };
+    var testIds = new[] { testId };
     foreach (var id in testIds)
     {
         try
