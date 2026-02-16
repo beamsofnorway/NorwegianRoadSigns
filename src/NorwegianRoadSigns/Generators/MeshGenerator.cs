@@ -165,6 +165,145 @@ public class MeshGenerator
         return mesh;
     }
 
+    public Mesh CreateSegmentedRectangle713(float width, float height, IReadOnlyList<float> frontSegmentWidths, float thickness = DefaultThickness, float sideOffsetX = 0, float sideOffsetY = 0)
+    {
+        var mesh = new Mesh { Name = "SegmentedRectangle713" };
+
+        var hw = width / 2;
+        var hh = height / 2;
+        var ht = thickness / 2;
+
+        var segments = (frontSegmentWidths ?? Array.Empty<float>())
+            .Where(w => w > 0)
+            .ToList();
+
+        if (segments.Count == 0)
+        {
+            segments.Add(width);
+        }
+
+        var total = segments.Sum();
+        if (total <= 0)
+        {
+            total = width;
+        }
+
+        // Normalize incoming widths so they always span the full plate width.
+        var normalized = segments.Select(w => (w / total) * width).ToList();
+
+        void AddTriangle(Vector3 a, Vector3 b, Vector3 c, Vector3 normal, Vector2 ua, Vector2 ub, Vector2 uc)
+        {
+            var baseIdx = mesh.Vertices.Count;
+
+            mesh.Vertices.Add(WithSideOffset(a, sideOffsetX, sideOffsetY));
+            mesh.Vertices.Add(WithSideOffset(b, sideOffsetX, sideOffsetY));
+            mesh.Vertices.Add(WithSideOffset(c, sideOffsetX, sideOffsetY));
+
+            mesh.Normals.Add(normal);
+            mesh.Normals.Add(normal);
+            mesh.Normals.Add(normal);
+
+            mesh.UVs.Add(ua);
+            mesh.UVs.Add(ub);
+            mesh.UVs.Add(uc);
+
+            mesh.Indices.Add(baseIdx);
+            mesh.Indices.Add(baseIdx + 1);
+            mesh.Indices.Add(baseIdx + 2);
+        }
+
+        void AddQuad(Vector3 bl, Vector3 br, Vector3 tr, Vector3 tl, Vector3 normal, Vector2 uvBl, Vector2 uvBr, Vector2 uvTr, Vector2 uvTl)
+        {
+            AddTriangle(bl, br, tr, normal, uvBl, uvBr, uvTr);
+            AddTriangle(bl, tr, tl, normal, uvBl, uvTr, uvTl);
+        }
+
+        // Front face: split into variable-width segments for arrow/symbol/text boxes.
+        var x = -hw;
+        foreach (var segWidth in normalized)
+        {
+            var x0 = x;
+            var x1 = x + segWidth;
+            var u0 = (x0 + hw) / width;
+            var u1 = (x1 + hw) / width;
+
+            AddQuad(
+                new Vector3(x0, -ht, -hh),
+                new Vector3(x1, -ht, -hh),
+                new Vector3(x1, -ht, hh),
+                new Vector3(x0, -ht, hh),
+                new Vector3(0, -1, 0),
+                new Vector2(u0, 1),
+                new Vector2(u1, 1),
+                new Vector2(u1, 0),
+                new Vector2(u0, 0));
+
+            x = x1;
+        }
+
+        // Back face (single quad)
+        AddQuad(
+            new Vector3(hw, ht, -hh),
+            new Vector3(-hw, ht, -hh),
+            new Vector3(-hw, ht, hh),
+            new Vector3(hw, ht, hh),
+            new Vector3(0, 1, 0),
+            new Vector2(0, 1),
+            new Vector2(1, 1),
+            new Vector2(1, 0),
+            new Vector2(0, 0));
+
+        // Top
+        AddQuad(
+            new Vector3(-hw, -ht, hh),
+            new Vector3(hw, -ht, hh),
+            new Vector3(hw, ht, hh),
+            new Vector3(-hw, ht, hh),
+            new Vector3(0, 0, 1),
+            new Vector2(0, 1),
+            new Vector2(1, 1),
+            new Vector2(1, 0),
+            new Vector2(0, 0));
+
+        // Bottom
+        AddQuad(
+            new Vector3(-hw, ht, -hh),
+            new Vector3(hw, ht, -hh),
+            new Vector3(hw, -ht, -hh),
+            new Vector3(-hw, -ht, -hh),
+            new Vector3(0, 0, -1),
+            new Vector2(0, 1),
+            new Vector2(1, 1),
+            new Vector2(1, 0),
+            new Vector2(0, 0));
+
+        // Right
+        AddQuad(
+            new Vector3(hw, -ht, -hh),
+            new Vector3(hw, ht, -hh),
+            new Vector3(hw, ht, hh),
+            new Vector3(hw, -ht, hh),
+            new Vector3(1, 0, 0),
+            new Vector2(0, 1),
+            new Vector2(1, 1),
+            new Vector2(1, 0),
+            new Vector2(0, 0));
+
+        // Left
+        AddQuad(
+            new Vector3(-hw, ht, -hh),
+            new Vector3(-hw, -ht, -hh),
+            new Vector3(-hw, -ht, hh),
+            new Vector3(-hw, ht, hh),
+            new Vector3(-1, 0, 0),
+            new Vector2(0, 1),
+            new Vector2(1, 1),
+            new Vector2(1, 0),
+            new Vector2(0, 0));
+
+        return mesh;
+    }
+
     public Mesh CreateTriangle(float size, float thickness = DefaultThickness, float sideOffsetX = 0, float sideOffsetY = 0)
     {
         var mesh = new Mesh { Name = "Triangle" };

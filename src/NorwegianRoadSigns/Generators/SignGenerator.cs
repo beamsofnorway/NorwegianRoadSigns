@@ -243,19 +243,7 @@ public class SignGenerator
             
             foreach (var plate in sortedPlates)
             {
-                //This is removing codes that reprecent symbols that need to go on the signs, keep that in mind for later...
-                var result = "";
-                if (plate.Text != null)
-                {
-                    result = Regex.Replace(
-                                plate.Text,
-                                @"^\s*@\d+(?:\.\d+)?@(?:\$\d+\$)?\s*|\s*@\d+(?:\.\d+)?@(?:\$\d+\$)?\s*$",
-                                ""
-                    );
-                    if (result.Length > 0) plate.Text = result;
-                }
-
-                
+                var parsedText = ParsePlateText(plate.Text);
 
                 var definition = _definitionDb.Get(plate.SignNumber ?? "");
                 double rawWidth = plate.Width > 0 ? Math.Min(plate.Width / 1000.0, 1.5) : (definition?.DefaultWidth / 1000.0 ?? 0.6);
@@ -281,8 +269,19 @@ public class SignGenerator
                         mesh = _meshGenerator.CreateOctagon(Math.Min(width, height), 0.02f, 0, 0);
                         break;
                     default:
-                        // Always create width in X, height in Z - we'll manually rotate for mot/i
-                        mesh = _meshGenerator.CreateRectangle(width, height, 0.02f, 0, 0);
+                        // New staged mesh path for 713 directional signs.
+                        // Legacy rectangle remains fallback for every other sign.
+                        if ((plate.SignNumber ?? string.Empty).StartsWith("713", StringComparison.OrdinalIgnoreCase))
+                        {
+                            var isArrowRight = IsArrowRight(plate.SignNumber, plate.Text);
+                            var frontSegmentWidths = Build713FrontSegmentWidths(plate, parsedText, width, height, isArrowRight);
+                            mesh = _meshGenerator.CreateSegmentedRectangle713(width, height, frontSegmentWidths, 0.02f, 0, 0);
+                        }
+                        else
+                        {
+                            // Always create width in X, height in Z - we'll manually rotate for mot/i
+                            mesh = _meshGenerator.CreateRectangle(width, height, 0.02f, 0, 0);
+                        }
                         break;
                 }
                 
@@ -317,87 +316,7 @@ public class SignGenerator
 
                 var textureName = $"sign_{plate.Id}";
                 
-                byte[] texture;
-                var signNumber = plate.SignNumber ?? "";
-                var definitionForCategory = definition ?? new SignDefinition { BorderColor = SignColor.Svart, Category = SignCategory.Other, DefaultWidth = 600, DefaultHeight = 600 };
-                var category = definitionForCategory.Category;
-                
-                var aspectRatio = (float)(definitionForCategory.DefaultHeight / definitionForCategory.DefaultWidth);
-                var targetWidth = 1024;
-                var targetHeight = (int)(targetWidth * aspectRatio);
-                
-                var hasText = !string.IsNullOrEmpty(plate.Text);
-                var fontHeight = plate.TextHeight > 0 
-                    ? plate.TextHeight 
-                    : definitionForCategory.DefaultHeight / 2.14;
-                
-                if (!string.IsNullOrEmpty(_signsBaseDirectory))
-                {
-                    var imagePath = _textureGenerator.FindSignImage(_signsBaseDirectory, signNumber, category);
-                    
-                    if (!string.IsNullOrEmpty(imagePath))
-                    {
-                        var imgDims = _textureGenerator.GetImageDimensions(imagePath);
-                        if (imgDims.width > 0 && imgDims.height > 0)
-                        {
-                            targetWidth = 1024;
-                            targetHeight = (int)(targetWidth * (float)imgDims.height / imgDims.width);
-                        }
-                    }
-                    
-                    if (hasText)
-                    {
-                        if (!string.IsNullOrEmpty(imagePath))
-                        {
-                            var baseTexture = _textureGenerator.ResizeImageFromFile(imagePath, targetWidth, targetHeight);
-                            var textTexture = _textureGenerator.GenerateTransparentTextTexture(
-                                plate.Text ?? "",
-                                fontHeight,
-                                SignColor.Svart,
-                                targetWidth,
-                                targetHeight / 2,
-                                definitionForCategory.DefaultHeight);
-                            texture = _textureGenerator.CompositeTextures(baseTexture, textTexture, 0, (targetHeight - targetHeight / 2) / 2);
-                        }
-                        else
-                        {
-                            texture = _textureGenerator.CreateSignTextureWithText(
-                                definitionForCategory,
-                                plate.Color,
-                                plate.Text,
-                                targetWidth,
-                                targetHeight,
-                                fontHeight);
-                        }
-                    }
-                    else
-                    {
-                        if (!string.IsNullOrEmpty(imagePath))
-                        {
-                            texture = _textureGenerator.ResizeImageFromFile(imagePath, targetWidth, targetHeight);
-                        }
-                        else
-                        {
-                            texture = _textureGenerator.CreateSignTextureWithText(
-                                definitionForCategory,
-                                plate.Color,
-                                plate.Text,
-                                targetWidth,
-                                targetHeight,
-                                fontHeight);
-                        }
-                    }
-                }
-                else
-                {
-                    texture = _textureGenerator.CreateSignTextureWithText(
-                        definitionForCategory,
-                        plate.Color,
-                        plate.Text,
-                        targetWidth,
-                        targetHeight,
-                        fontHeight);
-                }
+                var texture = BuildPlateTexture(plate, definition, parsedText);
 
                 var plateMesh = new SignPlateMesh
                 {
@@ -430,8 +349,8 @@ public class SignGenerator
 
     public async Task ToDaeAsync(SignMesh signMesh, string filePath)
     {
-        var directory = Path.GetDirectoryName(filePath);
-        if (!string.IsNullOrEmpty(directory) && !Directory.Exists(directory))
+        var directory = Path.GetDirectoryName(filePath) ?? ".";
+        if (!Directory.Exists(directory))
         {
             Directory.CreateDirectory(directory);
         }
@@ -545,4 +464,364 @@ public class SignGenerator
     {
         _nvdbClient.Dispose();
     }
+
+    private byte[] BuildPlateTexture(SignPlate plate, SignDefinition? definition, ParsedPlateText parsedText)
+    {
+        var signNumber = plate.SignNumber ?? string.Empty;
+        var definitionForCategory = definition ?? new SignDefinition
+        {
+            BorderColor = SignColor.Svart,
+            Category = SignCategory.Other,
+            DefaultWidth = 600,
+            DefaultHeight = 600,
+            GeometryType = GeometryType.Rectangle
+        };
+
+        var aspectRatio = (float)(definitionForCategory.DefaultHeight / definitionForCategory.DefaultWidth);
+        var targetWidth = 1024;
+        var targetHeight = (int)(targetWidth * aspectRatio);
+
+        var fontHeight = plate.TextHeight > 0
+            ? plate.TextHeight
+            : definitionForCategory.DefaultHeight / 2.14;
+
+        var category = definitionForCategory.Category;
+        string? imagePath = null;
+
+        if (!string.IsNullOrEmpty(_signsBaseDirectory))
+        {
+            imagePath = _textureGenerator.FindSignImage(_signsBaseDirectory, signNumber, category);
+
+            if (!string.IsNullOrEmpty(imagePath))
+            {
+                var imgDims = _textureGenerator.GetImageDimensions(imagePath);
+                if (imgDims.width > 0 && imgDims.height > 0)
+                {
+                    targetWidth = 1024;
+                    targetHeight = (int)(targetWidth * (float)imgDims.height / imgDims.width);
+                }
+            }
+        }
+
+        if (TryCreateTemplateTexture(
+                plate,
+                signNumber,
+                parsedText,
+                definitionForCategory,
+                targetWidth,
+                targetHeight,
+                fontHeight,
+                out var templateTexture))
+        {
+            return templateTexture;
+        }
+
+        return CreateLegacyPlateTexture(
+            plate,
+            parsedText,
+            definitionForCategory,
+            targetWidth,
+            targetHeight,
+            fontHeight,
+            imagePath);
+    }
+
+    private bool TryCreateTemplateTexture(
+        SignPlate plate,
+        string signNumber,
+        ParsedPlateText parsedText,
+        SignDefinition definition,
+        int targetWidth,
+        int targetHeight,
+        double fontHeight,
+        out byte[] texture)
+    {
+        texture = Array.Empty<byte>();
+
+        // New templated path (first rollout): 713 one-line directional signs.
+        // Keep legacy path as fallback for all other sign families and layouts.
+        if (!signNumber.StartsWith("713", StringComparison.OrdinalIgnoreCase))
+        {
+            return false;
+        }
+
+        if (string.IsNullOrWhiteSpace(parsedText.DisplayText) || parsedText.DisplayText.Contains("\n"))
+        {
+            return false;
+        }
+
+        var arrowRight = IsArrowRight(signNumber, plate.Text);
+        var symbolBoxCount = parsedText.ElementTokens.Count;
+        texture = _textureGenerator.CreateTemplate713OneLineTexture(
+            definition,
+            plate.Color,
+            parsedText.DisplayText,
+            targetWidth,
+            targetHeight,
+            fontHeight,
+            arrowRight,
+            symbolBoxCount,
+            signNumber);
+
+        return texture.Length > 0;
+    }
+
+    private byte[] CreateLegacyPlateTexture(
+        SignPlate plate,
+        ParsedPlateText parsedText,
+        SignDefinition definitionForCategory,
+        int targetWidth,
+        int targetHeight,
+        double fontHeight,
+        string? imagePath)
+    {
+        var hasText = !string.IsNullOrEmpty(parsedText.DisplayText);
+        var hasPrebakedElements = parsedText.ElementTokens.Count > 0;
+
+        if (!string.IsNullOrEmpty(_signsBaseDirectory))
+        {
+            if (hasText || hasPrebakedElements)
+            {
+                byte[] baseTexture;
+
+                if (!string.IsNullOrEmpty(imagePath))
+                {
+                    baseTexture = _textureGenerator.ResizeImageFromFile(imagePath, targetWidth, targetHeight);
+                }
+                else
+                {
+                    baseTexture = _textureGenerator.CreateSignTextureWithText(
+                        definitionForCategory,
+                        plate.Color,
+                        null,
+                        targetWidth,
+                        targetHeight,
+                        fontHeight);
+                }
+
+                if (hasPrebakedElements)
+                {
+                    baseTexture = CompositePrebakedElements(
+                        baseTexture,
+                        parsedText.ElementTokens,
+                        targetWidth,
+                        targetHeight);
+                }
+
+                if (hasText)
+                {
+                    var textTexture = _textureGenerator.GenerateTransparentTextTexture(
+                        parsedText.DisplayText,
+                        fontHeight,
+                        SignColor.Svart,
+                        targetWidth,
+                        targetHeight / 2,
+                        definitionForCategory.DefaultHeight);
+
+                    baseTexture = _textureGenerator.CompositeTextures(baseTexture, textTexture, 0, (targetHeight - targetHeight / 2) / 2);
+                }
+
+                return baseTexture;
+            }
+
+            if (!string.IsNullOrEmpty(imagePath))
+            {
+                return _textureGenerator.ResizeImageFromFile(imagePath, targetWidth, targetHeight);
+            }
+        }
+
+        return _textureGenerator.CreateSignTextureWithText(
+            definitionForCategory,
+            plate.Color,
+            parsedText.DisplayText,
+            targetWidth,
+            targetHeight,
+            fontHeight);
+    }
+
+
+    private static bool IsArrowRight(string? signNumber, string? rawText)
+    {
+        if (!string.IsNullOrWhiteSpace(signNumber))
+        {
+            var upper = signNumber.ToUpperInvariant();
+            if (upper.Contains(".H")) return true;
+            if (upper.Contains(".V")) return false;
+        }
+
+        // Fallback from text hints when variant suffix is unavailable.
+        return !(rawText?.Contains("<-") ?? false);
+    }
+
+    private static IReadOnlyList<float> Build713FrontSegmentWidths(
+        SignPlate plate,
+        ParsedPlateText parsedText,
+        float signWidth,
+        float signHeight,
+        bool arrowRight)
+    {
+        var widths = new List<float>();
+
+        var textHeightMeters = ((plate.TextHeight > 0 ? plate.TextHeight : 140.0) / 1000.0f);
+        textHeightMeters = Math.Max(textHeightMeters, signHeight * 0.18f);
+
+        // Border side is slim. Arrow side is a square.
+        var borderSideWidth = Math.Max(signWidth * 0.035f, signHeight * 0.10f);
+        var arrowSideWidth = Math.Max(signHeight * 0.95f, signWidth * 0.08f);
+        var symbolWidth = Math.Max(signHeight * 0.80f, signWidth * 0.07f);
+
+        var symbolCount = Math.Max(0, parsedText.ElementTokens.Count);
+        var symbolBlockWidth = symbolCount * symbolWidth;
+
+        var normalizedText = Regex.Replace(parsedText.DisplayText ?? string.Empty, @"\s+", " ").Trim();
+        var words = normalizedText.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        var hasTrailingDistance = words.Length > 1 && double.TryParse(words[^1], out _);
+
+        var locationText = hasTrailingDistance ? string.Join(' ', words.Take(words.Length - 1)) : normalizedText;
+        var distanceText = hasTrailingDistance ? words[^1] : string.Empty;
+
+        var locationWidths = ToGlyphWidths(locationText, textHeightMeters);
+        var distanceWidths = ToGlyphWidths(distanceText, textHeightMeters * 0.95f);
+
+        var textGap = (locationWidths.Count > 0 && distanceWidths.Count > 0) ? Math.Max(signWidth * 0.012f, textHeightMeters * 0.25f) : 0f;
+
+        var contentWidth = borderSideWidth + arrowSideWidth + symbolBlockWidth + locationWidths.Sum() + distanceWidths.Sum() + textGap;
+        var filler = Math.Max(0f, signWidth - contentWidth);
+
+        if (arrowRight)
+        {
+            widths.Add(borderSideWidth);
+            if (filler > 0) widths.Add(filler);
+            widths.AddRange(locationWidths);
+            if (textGap > 0) widths.Add(textGap);
+            widths.AddRange(distanceWidths);
+            for (var i = 0; i < symbolCount; i++) widths.Add(symbolWidth);
+            widths.Add(arrowSideWidth);
+        }
+        else
+        {
+            widths.Add(arrowSideWidth);
+            for (var i = 0; i < symbolCount; i++) widths.Add(symbolWidth);
+            widths.AddRange(distanceWidths);
+            if (textGap > 0) widths.Add(textGap);
+            widths.AddRange(locationWidths);
+            if (filler > 0) widths.Add(filler);
+            widths.Add(borderSideWidth);
+        }
+
+        return widths.Where(w => w > 0).ToList();
+    }
+
+    private static List<float> ToGlyphWidths(string text, float textHeightMeters)
+    {
+        var result = new List<float>();
+        if (string.IsNullOrEmpty(text))
+        {
+            return result;
+        }
+
+        foreach (var ch in text)
+        {
+            var factor = ch switch
+            {
+                ' ' => 0.35f,
+                >= '0' and <= '9' => 0.55f,
+                >= 'A' and <= 'Z' => 0.62f,
+                >= 'a' and <= 'z' => 0.54f,
+                'Æ' or 'Ø' or 'Å' => 0.66f,
+                'æ' or 'ø' or 'å' => 0.58f,
+                _ => 0.50f
+            };
+
+            result.Add(Math.Max(0.003f, textHeightMeters * factor));
+        }
+
+        return result;
+    }
+
+    private static ParsedPlateText ParsePlateText(string? rawText)
+    {
+        if (string.IsNullOrWhiteSpace(rawText))
+        {
+            return new ParsedPlateText(string.Empty, []);
+        }
+
+        var pattern = new Regex(@"@(?<code>\d+(?:\.\d+)?)@(?:\$(?<variant>\d+)\$)?");
+        var tokens = pattern
+            .Matches(rawText)
+            .Select(m =>
+            {
+                var code = m.Groups["code"].Value;
+                var variant = m.Groups["variant"].Success ? m.Groups["variant"].Value : null;
+                return string.IsNullOrWhiteSpace(variant) ? code : $"{code}_{variant}";
+            })
+            .Where(t => !string.IsNullOrWhiteSpace(t))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
+        var displayText = pattern.Replace(rawText, " ");
+        displayText = Regex.Replace(displayText, @"\s+", " ").Trim();
+
+        return new ParsedPlateText(displayText, tokens);
+    }
+
+    private byte[] CompositePrebakedElements(
+        byte[] baseTexture,
+        IReadOnlyList<string> elementTokens,
+        int targetWidth,
+        int targetHeight)
+    {
+        if (string.IsNullOrWhiteSpace(_signsBaseDirectory) || elementTokens.Count == 0)
+        {
+            return baseTexture;
+        }
+
+        var areaHeight = targetHeight / 2;
+        var maxElementHeight = (int)(areaHeight * 0.7);
+        var maxElementWidth = Math.Max(32, targetWidth / 5);
+
+        var overlays = new List<(byte[] bytes, int width, int height)>();
+        foreach (var token in elementTokens)
+        {
+            var elementPath = _textureGenerator.FindSignElementImage(_signsBaseDirectory, token);
+            if (string.IsNullOrEmpty(elementPath))
+            {
+                continue;
+            }
+
+            var dims = _textureGenerator.GetImageDimensions(elementPath);
+            if (dims.width <= 0 || dims.height <= 0)
+            {
+                continue;
+            }
+
+            var scale = Math.Min((double)maxElementWidth / dims.width, (double)maxElementHeight / dims.height);
+            scale = Math.Min(scale, 1.0);
+
+            var width = Math.Max(16, (int)(dims.width * scale));
+            var height = Math.Max(16, (int)(dims.height * scale));
+            var imageBytes = _textureGenerator.ResizeImageFromFile(elementPath, width, height);
+            overlays.Add((imageBytes, width, height));
+        }
+
+        if (overlays.Count == 0)
+        {
+            return baseTexture;
+        }
+
+        var totalWidth = overlays.Sum(o => o.width) + (overlays.Count - 1) * 16;
+        var currentX = Math.Max(0, (targetWidth - totalWidth) / 2);
+        var targetY = Math.Max(0, (targetHeight - areaHeight) / 2);
+
+        foreach (var overlay in overlays)
+        {
+            var y = targetY + Math.Max(0, (areaHeight - overlay.height) / 2);
+            baseTexture = _textureGenerator.CompositeTextures(baseTexture, overlay.bytes, currentX, y);
+            currentX += overlay.width + 16;
+        }
+
+        return baseTexture;
+    }
+
+    private sealed record ParsedPlateText(string DisplayText, List<string> ElementTokens);
 }
