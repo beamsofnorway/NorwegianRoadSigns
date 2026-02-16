@@ -209,6 +209,11 @@ public class TextureGenerator
 
     private void DrawSimpleText(Image<Rgba32> image, string text, int width, int height, int fontSize, Rgba32 color)
     {
+        DrawSimpleText(image, text, width, height, fontSize, color, 0, 0);
+    }
+
+    private void DrawSimpleText(Image<Rgba32> image, string text, int width, int height, int fontSize, Rgba32 color, int offsetX, int offsetY)
+    {
         if (string.IsNullOrEmpty(text))
         {
             return;
@@ -217,16 +222,16 @@ public class TextureGenerator
         var font = GetFont(fontSize);
         var textOptions = new RichTextOptions(font)
         {
-            Origin = new PointF(width / 2f, height / 2f),
+            Origin = new PointF(offsetX + width / 2f, offsetY + height / 2f),
             HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center
         };
 
         var textSize = TextMeasurer.MeasureSize(text, textOptions);
-        
-        var adjustedX = (width - textSize.Width) / 2;
-        var adjustedY = (height - textSize.Height) / 2;
-        
+
+        var adjustedX = offsetX + (width - textSize.Width) / 2;
+        var adjustedY = offsetY + (height - textSize.Height) / 2;
+
         textOptions.Origin = new PointF(adjustedX + textSize.Width / 2, adjustedY + textSize.Height / 2);
 
         image.Mutate(ctx => ctx.DrawText(textOptions, text, color));
@@ -317,6 +322,80 @@ public class TextureGenerator
             definition.DefaultHeight);
 
         return CompositeTextures(baseTexture, textTexture, 0, (height - textAreaHeight) / 2);
+    }
+
+    public byte[] CreateTemplate713OneLineTexture(
+        SignDefinition definition,
+        SignColor signColor,
+        string text,
+        int width,
+        int height,
+        double fontHeight,
+        bool arrowRight)
+    {
+        using var image = new Image<Rgba32>(width, height);
+
+        var backgroundColor = ColorMap.TryGetValue(signColor, out var bg) ? bg : new Rgba32(255, 206, 0, 255);
+        var borderColor = ColorMap.TryGetValue(definition.BorderColor, out var bc) ? bc : new Rgba32(0, 0, 0, 255);
+
+        // Outer border background
+        image.Mutate(ctx => ctx.Fill(borderColor));
+
+        var borderThickness = Math.Max(8, (int)(Math.Min(width, height) * 0.04f));
+        var tipInset = Math.Max(24, (int)(width * 0.12f));
+
+        var yTop = borderThickness;
+        var yBottom = height - borderThickness;
+        var xLeft = borderThickness;
+        var xRight = width - borderThickness;
+
+        PointF[] innerPolygon;
+        if (arrowRight)
+        {
+            innerPolygon =
+            [
+                new PointF(xLeft, yTop),
+                new PointF(xRight - tipInset, yTop),
+                new PointF(xRight, height / 2f),
+                new PointF(xRight - tipInset, yBottom),
+                new PointF(xLeft, yBottom)
+            ];
+        }
+        else
+        {
+            innerPolygon =
+            [
+                new PointF(xLeft + tipInset, yTop),
+                new PointF(xRight, yTop),
+                new PointF(xRight, yBottom),
+                new PointF(xLeft + tipInset, yBottom),
+                new PointF(xLeft, height / 2f)
+            ];
+        }
+
+        image.Mutate(ctx => ctx.FillPolygon(backgroundColor, innerPolygon));
+
+        // Render one-line destination text centered in the primary body of the arrow sign.
+        var fontSize = (int)(fontHeight * height / Math.Max(1, definition.DefaultHeight) * FontSizeMultiplier);
+        if (fontSize < 4) fontSize = 4;
+
+        var textAreaStartX = arrowRight ? xLeft + borderThickness : xLeft + tipInset + borderThickness;
+        var textAreaEndX = arrowRight ? xRight - tipInset - borderThickness : xRight - borderThickness;
+        var textAreaWidth = Math.Max(16, textAreaEndX - textAreaStartX);
+
+        DrawSimpleText(
+            image,
+            text,
+            textAreaWidth,
+            height - (2 * borderThickness),
+            fontSize,
+            borderColor,
+            textAreaStartX,
+            borderThickness);
+
+        using var ms = new MemoryStream();
+        image.SaveAsPng(ms);
+        return ms.ToArray();
     }
 
     public byte[] GenerateTransparentTextTexture(
@@ -461,6 +540,62 @@ public class TextureGenerator
         }
 
         return exactMatch ?? baseMatch;
+    }
+
+    public string? FindSignElementImage(string signsBaseDirectory, string elementToken)
+    {
+        if (string.IsNullOrWhiteSpace(signsBaseDirectory) || string.IsNullOrWhiteSpace(elementToken))
+        {
+            return null;
+        }
+
+        var elementDirectories = new[]
+        {
+            Path.Combine(signsBaseDirectory, "elements"),
+            Path.Combine(signsBaseDirectory, "symboler"),
+            Path.Combine(signsBaseDirectory, "icons")
+        };
+
+        var tokenVariants = new[]
+        {
+            elementToken,
+            elementToken.Replace('.', '_'),
+            elementToken.Replace('.', '-'),
+            elementToken.Replace('_', '.'),
+            elementToken.Replace('-', '.')
+        }
+        .Where(v => !string.IsNullOrWhiteSpace(v))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .ToList();
+
+        foreach (var directory in elementDirectories)
+        {
+            if (!Directory.Exists(directory))
+            {
+                continue;
+            }
+
+            var files = Directory.GetFiles(directory)
+                .Where(f =>
+                {
+                    var ext = Path.GetExtension(f).ToLowerInvariant();
+                    return ext is ".png" or ".jpg" or ".jpeg" or ".webp";
+                })
+                .ToList();
+
+            foreach (var token in tokenVariants)
+            {
+                var exact = files.FirstOrDefault(f =>
+                    string.Equals(Path.GetFileNameWithoutExtension(f), token, StringComparison.OrdinalIgnoreCase));
+
+                if (!string.IsNullOrEmpty(exact))
+                {
+                    return exact;
+                }
+            }
+        }
+
+        return null;
     }
 
     public byte[] CreateSignTextureFromImage(
