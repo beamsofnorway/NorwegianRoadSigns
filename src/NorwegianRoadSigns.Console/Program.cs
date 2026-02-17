@@ -3,7 +3,7 @@ using NorwegianRoadSigns.Generators;
 
 Console.WriteLine("Norwegian Road Signs - 3D Model Generator");
 Console.WriteLine("===========================================");
-var testId = 86278839;
+var testId = 86278833;
 var command = args.Length > 0 ? args[0].ToLower() : "nvdb";
 
 switch (command)
