@@ -167,36 +167,12 @@ public class MeshGenerator
 
     public Mesh CreateSegmentedRectangle713(float width, float height, int frontSegmentCount, float thickness = DefaultThickness, float sideOffsetX = 0, float sideOffsetY = 0)
     {
-        var count = Math.Max(1, frontSegmentCount);
-        var equalWidths = Enumerable.Repeat(1f, count).ToList();
-        return CreateSegmentedRectangle713(width, height, equalWidths, thickness, sideOffsetX, sideOffsetY);
-    }
-
-    public Mesh CreateSegmentedRectangle713(float width, float height, IReadOnlyList<float> frontSegmentWidths, float thickness = DefaultThickness, float sideOffsetX = 0, float sideOffsetY = 0)
-    {
         var mesh = new Mesh { Name = "SegmentedRectangle713" };
 
         var hw = width / 2;
         var hh = height / 2;
         var ht = thickness / 2;
-
-        var segments = (frontSegmentWidths ?? Array.Empty<float>())
-            .Where(w => w > 0)
-            .ToList();
-
-        if (segments.Count == 0)
-        {
-            segments.Add(width);
-        }
-
-        var total = segments.Sum();
-        if (total <= 0)
-        {
-            total = width;
-        }
-
-        // Normalize incoming widths so they always span the full plate width.
-        var normalized = segments.Select(w => (w / total) * width).ToList();
+        var segments = Math.Max(1, frontSegmentCount);
 
         void AddTriangle(Vector3 a, Vector3 b, Vector3 c, Vector3 normal, Vector2 ua, Vector2 ub, Vector2 uc)
         {
@@ -225,14 +201,13 @@ public class MeshGenerator
             AddTriangle(bl, tr, tl, normal, uvBl, uvTr, uvTl);
         }
 
-        // Front face: split into variable-width segments for arrow/symbol/text boxes.
-        var x = -hw;
-        foreach (var segWidth in normalized)
+        // Front face: split into multiple vertical segments for UV mapping of arrow/symbol/text boxes.
+        for (int i = 0; i < segments; i++)
         {
-            var x0 = x;
-            var x1 = x + segWidth;
-            var u0 = (x0 + hw) / width;
-            var u1 = (x1 + hw) / width;
+            var t0 = i / (float)segments;
+            var t1 = (i + 1) / (float)segments;
+            var x0 = -hw + (t0 * width);
+            var x1 = -hw + (t1 * width);
 
             AddQuad(
                 new Vector3(x0, -ht, -hh),
@@ -240,12 +215,10 @@ public class MeshGenerator
                 new Vector3(x1, -ht, hh),
                 new Vector3(x0, -ht, hh),
                 new Vector3(0, -1, 0),
-                new Vector2(u0, 1),
-                new Vector2(u1, 1),
-                new Vector2(u1, 0),
-                new Vector2(u0, 0));
-
-            x = x1;
+                new Vector2(t0, 1),
+                new Vector2(t1, 1),
+                new Vector2(t1, 0),
+                new Vector2(t0, 0));
         }
 
         // Back face (single quad)

@@ -273,9 +273,8 @@ public class SignGenerator
                         // Legacy rectangle remains fallback for every other sign.
                         if ((plate.SignNumber ?? string.Empty).StartsWith("713", StringComparison.OrdinalIgnoreCase))
                         {
-                            var isArrowRight = IsArrowRight(plate.SignNumber, plate.Text);
-                            var frontSegmentWidths = Build713FrontSegmentWidths(plate, parsedText, width, height, isArrowRight);
-                            mesh = _meshGenerator.CreateSegmentedRectangle713(width, height, frontSegmentWidths, 0.02f, 0, 0);
+                            var segmentCount = Estimate713FrontSegmentCount(parsedText);
+                            mesh = _meshGenerator.CreateSegmentedRectangle713(width, height, segmentCount, 0.02f, 0, 0);
                         }
                         else
                         {
@@ -550,7 +549,7 @@ public class SignGenerator
             return false;
         }
 
-        var arrowRight = IsArrowRight(signNumber, plate.Text);
+        var arrowRight = !(plate.Text?.Contains("<-") ?? false);
         var symbolBoxCount = parsedText.ElementTokens.Count;
         texture = _textureGenerator.CreateTemplate713OneLineTexture(
             definition,
@@ -560,8 +559,7 @@ public class SignGenerator
             targetHeight,
             fontHeight,
             arrowRight,
-            symbolBoxCount,
-            signNumber);
+            symbolBoxCount);
 
         return texture.Length > 0;
     }
@@ -640,105 +638,25 @@ public class SignGenerator
     }
 
 
-    private static bool IsArrowRight(string? signNumber, string? rawText)
+    private static int Estimate713FrontSegmentCount(ParsedPlateText parsedText)
     {
-        if (!string.IsNullOrWhiteSpace(signNumber))
-        {
-            var upper = signNumber.ToUpperInvariant();
-            if (upper.Contains(".H")) return true;
-            if (upper.Contains(".V")) return false;
-        }
+        // One fixed start/end control region on the plate front:
+        // - one for the arrow side
+        // - one for the opposite end cap / border side
+        var edgeControlSegments = 2;
 
-        // Fallback from text hints when variant suffix is unavailable.
-        return !(rawText?.Contains("<-") ?? false);
-    }
+        // Optional dedicated symbol regions between edge controls and text.
+        var symbolSegments = Math.Max(0, parsedText.ElementTokens.Count);
 
-    private static IReadOnlyList<float> Build713FrontSegmentWidths(
-        SignPlate plate,
-        ParsedPlateText parsedText,
-        float signWidth,
-        float signHeight,
-        bool arrowRight)
-    {
-        var widths = new List<float>();
-
-        var textHeightMeters = (float)((plate.TextHeight > 0 ? plate.TextHeight : 140.0) / 1000.0);
-        textHeightMeters = Math.Max(textHeightMeters, signHeight * 0.18f);
-
-        // Border side is slim. Arrow side is a square.
-        var borderSideWidth = Math.Max(signWidth * 0.035f, signHeight * 0.10f);
-        var arrowSideWidth = Math.Max(signHeight * 0.95f, signWidth * 0.08f);
-        var symbolWidth = Math.Max(signHeight * 0.80f, signWidth * 0.07f);
-
-        var symbolCount = Math.Max(0, parsedText.ElementTokens.Count);
-        var symbolBlockWidth = symbolCount * symbolWidth;
-
+        // Use character-driven segmentation for text so each glyph slot can map to a UV box.
+        // Keep spaces as their own slots to preserve visual rhythm (e.g. "Nodeland 25" => 11).
         var normalizedText = Regex.Replace(parsedText.DisplayText ?? string.Empty, @"\s+", " ").Trim();
-        var words = normalizedText.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-        var hasTrailingDistance = words.Length > 1 && double.TryParse(words[^1], out _);
+        var textSegments = Math.Max(1, normalizedText.Length);
 
-        var locationText = hasTrailingDistance ? string.Join(' ', words.Take(words.Length - 1)) : normalizedText;
-        var distanceText = hasTrailingDistance ? words[^1] : string.Empty;
+        var total = edgeControlSegments + symbolSegments + textSegments;
 
-        var locationWidths = ToGlyphWidths(locationText, textHeightMeters);
-        var distanceWidths = ToGlyphWidths(distanceText, textHeightMeters * 0.95f);
-
-        var textGap = (locationWidths.Count > 0 && distanceWidths.Count > 0)
-            ? Math.Max(signWidth * 0.012f, textHeightMeters * 0.25f)
-            : 0f;
-
-        var contentWidth = borderSideWidth + arrowSideWidth + symbolBlockWidth + locationWidths.Sum() + distanceWidths.Sum() + textGap;
-        var filler = Math.Max(0f, signWidth - contentWidth);
-
-        if (arrowRight)
-        {
-            widths.Add(borderSideWidth);
-            if (filler > 0) widths.Add(filler);
-            widths.AddRange(locationWidths);
-            if (textGap > 0) widths.Add(textGap);
-            widths.AddRange(distanceWidths);
-            for (var i = 0; i < symbolCount; i++) widths.Add(symbolWidth);
-            widths.Add(arrowSideWidth);
-        }
-        else
-        {
-            widths.Add(arrowSideWidth);
-            for (var i = 0; i < symbolCount; i++) widths.Add(symbolWidth);
-            widths.AddRange(distanceWidths);
-            if (textGap > 0) widths.Add(textGap);
-            widths.AddRange(locationWidths);
-            if (filler > 0) widths.Add(filler);
-            widths.Add(borderSideWidth);
-        }
-
-        return widths.Where(w => w > 0).ToList();
-    }
-
-    private static List<float> ToGlyphWidths(string text, float textHeightMeters)
-    {
-        var result = new List<float>();
-        if (string.IsNullOrEmpty(text))
-        {
-            return result;
-        }
-
-        foreach (var ch in text)
-        {
-            var factor = ch switch
-            {
-                ' ' => 0.35f,
-                >= '0' and <= '9' => 0.55f,
-                >= 'A' and <= 'Z' => 0.62f,
-                >= 'a' and <= 'z' => 0.54f,
-                'Æ' or 'Ø' or 'Å' => 0.66f,
-                'æ' or 'ø' or 'å' => 0.58f,
-                _ => 0.50f
-            };
-
-            result.Add(Math.Max(0.003f, textHeightMeters * factor));
-        }
-
-        return result;
+        // Allow denser layouts than before for longer destination names.
+        return Math.Clamp(total, 4, 128);
     }
 
     private static ParsedPlateText ParsePlateText(string? rawText)

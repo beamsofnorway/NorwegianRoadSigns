@@ -333,23 +333,14 @@ public class TextureGenerator
         int height,
         double fontHeight,
         bool arrowRight,
-        int symbolBoxCount = 0,
-        string? signNumber = null)
+        int symbolBoxCount = 0)
     {
         using var image = new Image<Rgba32>(width, height);
 
         var backgroundColor = ColorMap.TryGetValue(signColor, out var bg) ? bg : new Rgba32(255, 206, 0, 255);
         var borderColor = ColorMap.TryGetValue(definition.BorderColor, out var bc) ? bc : new Rgba32(0, 0, 0, 255);
 
-        // Prefer explicit sign variant over inferred direction if available.
-        if (!string.IsNullOrWhiteSpace(signNumber))
-        {
-            var upper = signNumber.ToUpperInvariant();
-            if (upper.Contains(".H")) arrowRight = true;
-            if (upper.Contains(".V")) arrowRight = false;
-        }
-
-        // 713 plate stays rectangular; arrow and border side are interior regions.
+        // 713 is rectangular in shape; arrow and symbols are interior elements.
         image.Mutate(ctx => ctx.Fill(borderColor));
 
         var borderThickness = Math.Max(8, (int)(Math.Min(width, height) * 0.04f));
@@ -360,40 +351,32 @@ public class TextureGenerator
 
         image.Mutate(ctx => ctx.Fill(backgroundColor, new Rectangle(innerX, innerY, innerWidth, innerHeight)));
 
-        // Border side slim, arrow side square.
-        var borderSideWidth = Math.Max(8, (int)(innerHeight * 0.18f));
-        var arrowBoxWidth = Math.Max(24, innerHeight);
-        var symbolBoxWidth = Math.Max(24, (int)(innerHeight * 0.85f));
-
-        var symbolCount = Math.Max(0, symbolBoxCount);
-
+        var arrowBoxWidth = Math.Max(48, (int)(width * 0.12f));
+        var symbolBoxWidth = Math.Max(48, (int)(width * 0.12f));
         int arrowBoxX;
-        int borderBoxX;
         int symbolStartX;
         int textStartX;
         int textEndX;
 
         if (arrowRight)
         {
-            borderBoxX = innerX;
             arrowBoxX = innerX + innerWidth - arrowBoxWidth;
-            symbolStartX = arrowBoxX - (symbolCount * symbolBoxWidth);
-            textStartX = borderBoxX + borderSideWidth + Math.Max(4, borderThickness / 2);
-            textEndX = Math.Max(textStartX + 16, symbolStartX - Math.Max(4, borderThickness / 2));
+            symbolStartX = arrowBoxX - (Math.Max(0, symbolBoxCount) * symbolBoxWidth);
+            textStartX = innerX + borderThickness;
+            textEndX = Math.Max(textStartX + 16, symbolStartX - borderThickness);
         }
         else
         {
             arrowBoxX = innerX;
-            borderBoxX = innerX + innerWidth - borderSideWidth;
             symbolStartX = arrowBoxX + arrowBoxWidth;
-            textStartX = Math.Min(borderBoxX - 16, symbolStartX + (symbolCount * symbolBoxWidth) + Math.Max(4, borderThickness / 2));
-            textEndX = borderBoxX - Math.Max(4, borderThickness / 2);
+            textStartX = Math.Min(innerX + innerWidth - 16, symbolStartX + (Math.Max(0, symbolBoxCount) * symbolBoxWidth) + borderThickness);
+            textEndX = innerX + innerWidth - borderThickness;
         }
 
-        DrawBoxOutline(image, borderBoxX, innerY, borderSideWidth, innerHeight, borderColor, Math.Max(2, borderThickness / 4));
+        // Draw arrow box and symbol boxes as explicit interior layout areas.
         DrawBoxOutline(image, arrowBoxX, innerY, arrowBoxWidth, innerHeight, borderColor, Math.Max(2, borderThickness / 3));
 
-        for (var i = 0; i < symbolCount; i++)
+        for (var i = 0; i < Math.Max(0, symbolBoxCount); i++)
         {
             var sx = symbolStartX + (i * symbolBoxWidth);
             DrawBoxOutline(image, sx, innerY, symbolBoxWidth, innerHeight, borderColor, Math.Max(2, borderThickness / 4));
@@ -409,9 +392,11 @@ public class TextureGenerator
             arrowBoxX,
             innerY);
 
+        // Text layout: align away from arrow, but keep trailing distance number aligned toward arrow.
         var textAreaWidth = Math.Max(16, textEndX - textStartX);
         var normalizedText = Regex.Replace(text ?? string.Empty, @"\s+", " ").Trim();
         var words = normalizedText.Split(' ', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
         var hasTrailingNumber = words.Length > 1 && double.TryParse(words[^1], out _);
 
         var fontSize = (int)(fontHeight * height / Math.Max(1, definition.DefaultHeight) * FontSizeMultiplier);
@@ -422,7 +407,7 @@ public class TextureGenerator
             var distanceText = words[^1];
             var locationText = string.Join(' ', words.Take(words.Length - 1));
 
-            DrawMeasuredTextLine(
+            DrawAlignedText(
                 image,
                 locationText,
                 textStartX,
@@ -431,11 +416,9 @@ public class TextureGenerator
                 innerHeight,
                 fontSize,
                 borderColor,
-                arrowRight ? HorizontalAlignment.Left : HorizontalAlignment.Right,
-                reserveFractionForCompanion: 0.30f,
-                preferArrowSide: false);
+                arrowRight ? HorizontalAlignment.Left : HorizontalAlignment.Right);
 
-            DrawMeasuredTextLine(
+            DrawAlignedText(
                 image,
                 distanceText,
                 textStartX,
@@ -444,13 +427,11 @@ public class TextureGenerator
                 innerHeight,
                 fontSize,
                 borderColor,
-                arrowRight ? HorizontalAlignment.Right : HorizontalAlignment.Left,
-                reserveFractionForCompanion: 0.70f,
-                preferArrowSide: true);
+                arrowRight ? HorizontalAlignment.Right : HorizontalAlignment.Left);
         }
         else
         {
-            DrawMeasuredTextLine(
+            DrawAlignedText(
                 image,
                 normalizedText,
                 textStartX,
@@ -459,81 +440,12 @@ public class TextureGenerator
                 innerHeight,
                 fontSize,
                 borderColor,
-                arrowRight ? HorizontalAlignment.Left : HorizontalAlignment.Right,
-                reserveFractionForCompanion: 1f,
-                preferArrowSide: false);
+                arrowRight ? HorizontalAlignment.Left : HorizontalAlignment.Right);
         }
 
         using var ms = new MemoryStream();
         image.SaveAsPng(ms);
         return ms.ToArray();
-    }
-
-    private void DrawMeasuredTextLine(
-        Image<Rgba32> image,
-        string text,
-        int x,
-        int y,
-        int width,
-        int height,
-        int fontSize,
-        Rgba32 color,
-        HorizontalAlignment alignment,
-        float reserveFractionForCompanion,
-        bool preferArrowSide)
-    {
-        if (string.IsNullOrWhiteSpace(text) || width <= 4 || height <= 4)
-        {
-            return;
-        }
-
-        var font = GetFont(fontSize);
-        var availableWidth = Math.Max(8f, width * Math.Clamp(reserveFractionForCompanion, 0.1f, 1f));
-        var charSpacing = Math.Max(1f, fontSize * 0.05f);
-
-        var glyphs = new List<(string glyph, float width)>();
-        var measureOptions = new RichTextOptions(font);
-        foreach (var ch in text)
-        {
-            var glyph = ch.ToString();
-            var glyphWidth = TextMeasurer.MeasureSize(glyph, measureOptions).Width;
-            glyphs.Add((glyph, Math.Max(glyphWidth, fontSize * 0.18f)));
-        }
-
-        var totalGlyphWidth = glyphs.Sum(g => g.width) + charSpacing * Math.Max(0, glyphs.Count - 1);
-        var scale = totalGlyphWidth > availableWidth ? availableWidth / totalGlyphWidth : 1f;
-
-        var scaledSpacing = charSpacing * scale;
-        var scaledTotal = glyphs.Sum(g => g.width * scale) + scaledSpacing * Math.Max(0, glyphs.Count - 1);
-
-        float cursorX = alignment switch
-        {
-            HorizontalAlignment.Left => x,
-            HorizontalAlignment.Right => x + width - scaledTotal,
-            _ => x + ((width - scaledTotal) / 2f)
-        };
-
-        if (preferArrowSide)
-        {
-            cursorX = alignment == HorizontalAlignment.Right
-                ? x + width - scaledTotal
-                : x;
-        }
-
-        var baselineY = y + (height / 2f);
-
-        foreach (var glyph in glyphs)
-        {
-            var options = new RichTextOptions(font)
-            {
-                Origin = new PointF(cursorX, baselineY),
-                HorizontalAlignment = HorizontalAlignment.Left,
-                VerticalAlignment = VerticalAlignment.Center
-            };
-
-            image.Mutate(ctx => ctx.DrawText(options, glyph.glyph, color));
-            cursorX += (glyph.width * scale) + scaledSpacing;
-        }
     }
 
     private static void DrawBoxOutline(Image<Rgba32> image, int x, int y, int width, int height, Rgba32 color, int lineThickness)
